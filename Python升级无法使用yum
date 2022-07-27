@@ -1,0 +1,5 @@
+# vim /usr/libexec/urlgrabber-ext-down 
+  #!/usr/bin/python ---> #!/usr/bin/python2.7
+
+# vim /usr/bin/yum
+  #!/usr/bin/python ---> #!/usr/bin/python2.7
