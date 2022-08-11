@@ -1,0 +1,15 @@
+wget https://www.witersen.com/wp-content/uploads/2022/03/opencv-4.5.5.tar.gz
+wget https://www.witersen.com/wp-content/uploads/2022/03/opencv_contrib-4.5.5.tar.gz
+tar -vxf opencv-4.5.5.tar.gz
+tar -vxf opencv_contrib-4.5.5.tar.gz
+mv opencv-4.5.5 opencv
+mv opencv_contrib-4.5.5 opencv_contrib
+mv opencv_contrib opencv/
+cd opencv
+mkdir build
+cd build
+cmake -D CMAKE_BUILD_TYPE=RELEASE -D BUILD_TIFF=ON -D CMAKE_INSTALL_PREFIX=/usr/local -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules/ -D INSTALL_C_EXAMPLES=ON -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_GENERATE_PKGCONFIG=ON  -D BUILD_EXAMPLES=ON ..
+make -j4
+
+
+备注： 在安装过程中会出现 opencv 与 anaconda3 库依赖的问题，可以通过 locate 查看冲突库，删除掉anaconda3的，并且把系统的库软链接到原来的库
