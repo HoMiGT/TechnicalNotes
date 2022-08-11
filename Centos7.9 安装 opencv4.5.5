@@ -13,7 +13,8 @@ cd build
 cmake -D CMAKE_BUILD_TYPE=RELEASE -D BUILD_TIFF=ON -D CMAKE_INSTALL_PREFIX=/usr/local -D OPENCV_EXTRA_MODULES_PATH=../opencv_contrib/modules/ -D INSTALL_C_EXAMPLES=ON -D INSTALL_PYTHON_EXAMPLES=ON -D OPENCV_GENERATE_PKGCONFIG=ON  -D BUILD_EXAMPLES=ON ..
 make -j4
 sudo make install
-
+sudo ln -s /usr/local/lib/pkgconfig/opencv4.pc /usr/share/pkgconfig/
+sudo ldconfig
 
 检查
 pkg-config --cflags opencv4
