@@ -6,3 +6,5 @@
 ## [Centos7.9升级gcc版本](https://github.com/TeslaHou/TechnicalNotes/blob/main/Centos7.9%E5%8D%87%E7%BA%A7gcc%E7%89%88%E6%9C%AC)
 
 ## [Python升级无法使用yum](https://github.com/TeslaHou/TechnicalNotes/blob/main/Python%E5%8D%87%E7%BA%A7%E6%97%A0%E6%B3%95%E4%BD%BF%E7%94%A8yum)
+
+## [Centos7.9安装Opencv4.5.5](https://github.com/TeslaHou/TechnicalNotes/blob/main/Centos7.9%20%E5%AE%89%E8%A3%85%20opencv4.5.5)
