@@ -1,0 +1,10 @@
+wget https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz
+tar -xf boost_1_79_0.tar.gz
+mv boost_1_79_0 boost
+cd boost
+./bootstrap.sh --prefix=/usr/local --with-libraries=all
+./b2
+sudo ./b2 install
+
+
+备注：代码会安装在 /usr/local/include/boost 目录下
