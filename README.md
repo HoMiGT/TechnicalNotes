@@ -8,3 +8,5 @@
 ## [Python升级无法使用yum](https://github.com/TeslaHou/TechnicalNotes/blob/main/Python%E5%8D%87%E7%BA%A7%E6%97%A0%E6%B3%95%E4%BD%BF%E7%94%A8yum)
 
 ## [Centos7.9安装Opencv4.5.5](https://github.com/TeslaHou/TechnicalNotes/blob/main/Centos7.9%20%E5%AE%89%E8%A3%85%20opencv4.5.5)
+
+## [Ubuntu20.04安装boost.1.79.0](https://github.com/TeslaHou/TechnicalNotes/blob/main/Ubuntu20.04%E5%AE%89%E8%A3%85boost.1.79.0)
