@@ -1,0 +1,7 @@
+sudo apt-get update
+sudo apt-get install fcitx fcitx-bin fcitx-libs
+sudo apt install libqt5qml5 libqt5quick5 libqt5quickwidgets5 qml-module-qtquick2
+sudo apt install libgsettings-qt1
+sudo dpkg -i sogoupinyin_4.0.1.2800_x86_64.deb
+sudo reboot
+
