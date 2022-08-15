@@ -13,4 +13,3 @@
 
 ## [Ubuntu20.04安装依赖库报错](https://github.com/TeslaHou/TechnicalNotes/blob/main/Ubuntu20.04%E5%AE%89%E8%A3%85%E5%BA%93%E4%BE%9D%E8%B5%96%E6%8A%A5%E9%94%99)
 
-## [Ubuntu20.04安装搜狗输入法](https://github.com/TeslaHou/TechnicalNotes/blob/main/Ubuntu20.04%E5%AE%89%E8%A3%85%E6%90%9C%E7%8B%97%E8%BE%93%E5%85%A5%E6%B3%95)
