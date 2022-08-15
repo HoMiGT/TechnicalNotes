@@ -1,0 +1,28 @@
+在更新apt源为阿里云源时 需要修改成系统版本对应的源
+
+查看ubuntu的版本
+lsb_release -a
+
+其中Codename 为ubuntu的版本
+阿里云的链接
+http://mirrors.aliyun.com/ubuntu/dists/ 
+
+
+需要修改 /etc/apt/sources.list 里的内容 将如下的代号替换成 Codename所指向的值
+
+deb http://mirrors.aliyun.com/ubuntu/ 代号 main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ 代号 main restricted universe multiverse
+
+deb http://mirrors.aliyun.com/ubuntu/ 代号-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ 代号-security main restricted universe multiverse
+
+deb http://mirrors.aliyun.com/ubuntu/ 代号-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ 代号-updates main restricted universe multiverse
+
+deb http://mirrors.aliyun.com/ubuntu/ 代号-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ 代号-proposed main restricted universe multiverse
+
+deb http://mirrors.aliyun.com/ubuntu/ 代号-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ 代号-backports main restricted universe multiverse
+
+
