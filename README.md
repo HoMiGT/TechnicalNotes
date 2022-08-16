@@ -13,3 +13,5 @@
 
 ## [Ubuntu20.04安装依赖库报错](https://github.com/TeslaHou/TechnicalNotes/blob/main/Ubuntu20.04%E5%AE%89%E8%A3%85%E5%BA%93%E4%BE%9D%E8%B5%96%E6%8A%A5%E9%94%99)
 
+## [Ubuntu20.04安装官方微信(老版本)](https://github.com/TeslaHou/TechnicalNotes/blob/main/Ubuntu20.04%E5%AE%89%E8%A3%85%E5%AE%98%E6%96%B9%E5%BE%AE%E4%BF%A1(%E8%80%81%E7%89%88%E6%9C%AC))
+
