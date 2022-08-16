@@ -1,0 +1,17 @@
+查看ubuntu的Codename 版本信息 我的是focal
+lsb_release -a 
+
+sudo touch /etc/apt/sources.list.d/software.list
+
+添加从优麒麟的镜像安装原生微信
+sudo gedit /etc/apt/soruces.list.d/software.list
+    deb http://archive.ubuntukylin.com/ubuntukylin focal-partner main
+
+添加apt key  56583E647FFA7DE7是key，可以在apt update运行报错后获得
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 56583E647FFA7DE7
+
+更新列表
+apt update
+
+安装微信
+apt install weixin 
