@@ -14,6 +14,30 @@ source /etc/profile
 
 
 3. 下载安装clang
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/clang-14.0.6.src.tar.xz
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/clang-tools-extra-14.0.6.src.tar.xz
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/compiler-rt-14.0.6.src.tar.xz
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.6/llvm-14.0.6.src.tar.xz
+xz -dk clang-14.0.6.src.tar.xz && xz -dk llvm-14.0.6.src.tar.xz && xz -dk clang-tools-extra-14.0.6.src.tar.xz && xz -dk compiler-rt-14.0.6.src.tar.xz
+tar xf clang-14.0.6.src.tar && tar xf llvm-14.0.6.src.tar && tar xf clang-tools-extra-14.0.6.src.tar && tar xf compiler-rt-14.0.6.src.tar
+mv clang-14.0.6.src clang && mv compiler-rt-14.0.6.src compiler-rt && mv clang-tools-extra-14.0.6.src extra
+mv clang llvm-14.0.6.src/tools/clang && mv compiler-rt llvm-14.0.6.src/projects/compiler-rt && mv extra llvm-14.0.6.src/tools/clang/tools/extra
+export CLANG_GCC=/usr/local
+mkdir build && cd build
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DGCC_INSTALL_PREFIX=${CLANG_GCC} -DCMAKE_CXX_LINK_FLAGS="-L${CLANG_GCC}/lib64 -Wl,-rpath,${CLANG_GCC}/lib64" -DCMAKE_INSTALL_PREFIX=${CLANG_GCC}  -DLLVM_ENABLE_ASSERTIONS=On ../llvm-14.0.6.src
+
+
+
+
+
+
+
+
+
+
+
+
+
 wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-14.0.6.tar.gz
 tar -xf llvmorg-14.0.6.tar.gz
 cd llvm-project-llvmorg-14.0.6
