@@ -1,0 +1,14 @@
+1. 更新windows的rpm源
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+2. 更新vscode.repo
+sudo vim /etc/yum.repos.d/vscode.repo
+
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+
+3. 安装code 
+sudo yum install code
