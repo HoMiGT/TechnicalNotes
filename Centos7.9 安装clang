@@ -1,0 +1,25 @@
+1. 确保安装gcc的版本在4以上
+gcc --version
+
+2. 下载安装cmake
+wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1-linux-x86_64.tar.gz
+tar -xf cmake-3.24.1-linux-x86_64.tar.gz
+ln -s /usr/local/src/cmake-3.24.1-linux-x86_64/bin/cmake /usr/bin/cmake
+gedit /etc/profile
+
+  export PATH=$PATH:/usr/local/src/cmake-3.24.1-linux-x86_64/bin
+  
+source /etc/profile
+
+
+
+3. 下载安装clang
+wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-14.0.6.tar.gz
+tar -xf llvmorg-14.0.6.tar.gz
+cd llvm-project-llvmorg-14.0.6
+mkdir build && cd build 
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/usr/local/clang -DCMAKE_BUILD_TYPE=Release -DCMAKE_ENABLE_ASSERTIONS=On ../llvm/
+make -j4
+make install 
+echo "export PATH=$PATH:/usr/local/clang/bin" >> /etc/profile
+source /etc/profile
