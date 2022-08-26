@@ -22,6 +22,14 @@ Centos7.9默认版本是4.8.5，升级步骤如下
   # mv /usr/bin/g++ /usr/bin/g++-4.8.5
 
   # ln -s /opt/rh/devtoolset-8/root/bin/g++ /usr/bin/g++
+  
+  # mv /usr/bin/c++ /usr/bin/c++-4.8.5
+  
+  # ln -s /opt/rh/devtoolset-8/root/bin/c++ /usr/bin/c++
+  
+  # mv /usr/bin/cc /usr/bin/cc-4.8.5
+  
+  # ln -s /opt/rh/devtoolset-8/root/bin/cc /usr/bin/cc
 
   # gcc --version
 
