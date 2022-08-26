@@ -1,0 +1,6 @@
+cd /usr/share/fonts
+git clone https://github.com/abertsch/Menlo-for-Powerline.git
+yum install fontconfig
+fc-cache
+
+打开vscode配置"terminal.integrated.fontFamily"，将 "monospace" 改为 "Menlo for Powerline"
