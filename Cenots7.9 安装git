@@ -8,3 +8,9 @@ $ make prefix=/usr/local/git all
 # source /etc/bashrc
 $ git --version
 
+
+
+
+
+全局免密登录
+git config --global credential.helper store
