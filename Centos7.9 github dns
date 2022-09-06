@@ -1,0 +1,18 @@
+分别查询
+github.com
+github.global.ssl.fastly.net
+assets-cdn.github.com
+的dns对应的ip地址
+
+修改 /etc/hosts
+
+vim /etc/hosts
+
+20.205.243.166 github.com
+39.109.122.128 github.global.ssl.fastly.net
+185.199.111.153 assets-cdn.github.com
+
+
+
+
+
