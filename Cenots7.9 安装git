@@ -1,0 +1,10 @@
+$ wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.37.3.tar.gz
+$ tar xf git-2.37.3.tar.gz
+$ cd git-2.37.3
+$ yum -y install libcurl-devel expat-devel openssl-devel
+$ make prefix=/usr/local/git all
+# make prefix=/usr/local/git install
+# echo "export PATH=$PATH:/usr/local/git/bin" >>/etc/bashrc
+# source /etc/bashrc
+$ git --version
+
