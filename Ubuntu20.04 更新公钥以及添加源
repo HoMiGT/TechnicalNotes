@@ -1,0 +1,5 @@
+// 更新公钥
+sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 40976EAF437D05B5 3B4FE6ACC0B21F32
+
+// 添加源
+sudo add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main"
