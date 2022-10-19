@@ -1,0 +1,4 @@
+1. 如果之前已经挂载hgfs，先取消挂载
+sudo umount /mnt/hgfs
+2. 重新用以下命令挂载即可下面命令中的uid和gid需要根据你的ubuntu用户uid来决定，输入id命令即可查询 (查看用户id cat /etc/passwd)
+sudo /usr/bin/vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other -o uid=1000 -o gid=1000 -o umask=022
