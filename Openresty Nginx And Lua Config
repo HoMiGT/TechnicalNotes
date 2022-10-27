@@ -1,0 +1,289 @@
+## nginx.conf
+
+#user  nobody;
+worker_processes  8;
+
+#error_log  logs/error.log;
+#error_log  logs/error.log  notice;
+#error_log  logs/error.log  info;
+
+#pid        logs/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+    use epoll;
+}
+
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    server_tokens off;
+    proxy_hide_header X-Powered-By;
+    proxy_hide_header Server;
+
+    lua_package_path "lualib/?.lua;;"; #lua 模块 
+    lua_package_cpath "lualib/?.so;;"; #c模块
+
+    sendfile        on;
+    
+    client_max_body_size 20m; 
+    # keepalive_timeout  2s;
+
+    upstream star_code {
+        # server 127.0.0.1:8010 weight=12 max_fails=5;
+        server 127.0.0.1:8010  max_fails=2;
+        # server 192.168.1.2:8010 weight=4 max_fails=5;
+        server 192.168.1.2:8010  max_fails=2;
+    }
+
+    upstream texture {
+        # server 127.0.0.1:9020 weight=12 max_fails=5;
+        server 127.0.0.1:9020  max_fails=2;
+        # server 192.168.1.2:9020 weight=4 max_fails=5;
+        server 192.168.1.2:9020  max_fails=2;
+    }
+ 
+    upstream img_stream{
+	
+	server 127.0.0.1:8000 max_fails=2;
+	server 127.0.0.1:8001 max_fails=2;
+	server 127.0.0.1:8002 max_fails=2;
+	server 127.0.0.1:8003 max_fails=2;
+	server 127.0.0.1:8004 max_fails=2;
+	server 127.0.0.1:8005 max_fails=2;
+	server 127.0.0.1:8006 max_fails=2;
+	server 127.0.0.1:8007 max_fails=2;
+
+	server 192.168.1.2:8000 max_fails=2;
+	server 192.168.1.2:8001 max_fails=2;
+	server 192.168.1.2:8002 max_fails=2;
+	server 192.168.1.2:8003 max_fails=2;
+	server 192.168.1.2:8004 max_fails=2;
+	server 192.168.1.2:8005 max_fails=2;
+	server 192.168.1.2:8006 max_fails=2;
+	server 192.168.1.2:8007 max_fails=2;
+    	# keepalive 16;
+    }
+    
+    server {
+        listen       80;
+        server_name  127.0.0.1;
+        lua_code_cache on;
+
+        location / {
+
+                        set $ws_args $args;
+                        set $ws_port '';
+                        proxy_read_timeout 35s;
+                        proxy_connect_timeout 1s;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection "upgrade";  
+                        rewrite_by_lua_file "conf/route.lua";    
+                        
+                        proxy_pass http://127.0.0.1:$ws_port;            
+       
+                }
+
+		# 上传文件流验伪 目前服务全支持  但现只提供 纹理色块以及星辰码
+		location /streamAntiFake {
+			proxy_set_header Host $host;
+           	 	proxy_set_header X-Real-IP $remote_addr;
+            		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            		proxy_set_header X-Forwarded-Host $host;
+            		proxy_set_header X-Forwarded-Port $server_port;
+            		proxy_set_header X-Forwarded-Proto $scheme;
+			proxy_pass http://img_stream;
+		}
+		
+		# 验证服务是否启动成功
+		location /streamPing {
+			proxy_set_header Host $host;
+            		proxy_set_header X-Real-IP $remote_addr;
+            		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            		proxy_set_header X-Forwarded-Host $host;
+            		proxy_set_header X-Forwarded-Port $server_port;
+            		proxy_set_header X-Forwarded-Proto $scheme;
+			proxy_pass http://img_stream;
+		}
+
+		
+
+        # 下载文件
+        location /download/image/ {
+                add_header Content-Type "application/octet-stream";  # 避免浏览器打开
+                alias /home/admin/ImageAntifakeCache/;
+        } 
+         
+        location /imageAntifake {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://star_code; 
+        }
+        
+        location /docs{
+            proxy_pass http://star_code;
+        }
+
+        location /frameAntifake {
+   	        proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://star_code;
+        }
+        
+        location /ping {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://star_code;
+        }
+        
+        location /textureAntifake {
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Port $server_port;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://texture;
+        }
+    }
+}
+
+
+
+
+## route.lua
+-- 创建reids连接
+local function conn_redis()
+        local redis = require("resty.redis")
+        local red = redis.new()
+        local ok,err = red:connect("127.0.0.1",6379)
+        if not ok or err then
+                ngx.say("connection redis failed")
+                return ngx.exit(ngx.HTTP_SERVICE_UNAVAILABLE)
+        end
+        ngx.ctx.redis = red  --在当前的请求内共享变量
+end
+
+-- 分割字符串
+local function split(str)
+    local resultStrList = {}
+    string.gsub(str,'(%w+)',function (w)
+        table.insert(resultStrList,w)
+    end)
+    return resultStrList
+end
+
+-- 保存头信息
+local function save_header()
+	local GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+	local headers = ngx.req.get_headers()
+	if headers ~= nil then
+        local key = headers["sec-websocket-key"]
+        local s = "key:".. key
+        ngx.ctx.redis:set("headers",s)
+	end
+end
+
+-- 获得空闲端口号
+local function get_free_port() 
+	local free_port = nil 
+	local args = ngx.req.get_uri_args()
+	if (type(args) == "table" and args ~= nil) 
+	then
+		-- 获取端口 	
+		local ports_str = ngx.ctx.redis:get("WPWL_ALOGRITHMSERVER_PORTS")
+		local ports_table = {}
+		-- 字符串截取并存入table中
+		string.gsub(ports_str,'(%w+)',function (w) table.insert(ports_table,w) end)
+		-- table 为空则说明RPServer启动失败 没有可用端口号 直接返回
+		if (#ports_table == 0)
+		then 
+			ngx.say("split ports_str failed")
+			return ngx.exit(ngx.HTTP_SERVICE_UNAVAILABLE)
+		end 
+		-- 获得携带 流地址    有地址为算法服务  没有地址则为心跳监测服务
+		local address = args["address"]
+		if ( address == nil) -- 心跳服务   
+		then 
+			-- 随机选择端口号检测
+			math.randomseed(ngx.now())
+			local index = math.random(#ports_table)
+			free_port = ports_table[index]
+		else   -- 非心跳服务
+			-- 根据地址获得端口  没有则从空闲的端口中选一个存入redis中 
+			local port = ngx.ctx.redis:get(address)
+			if ( port == ngx.null)
+			then
+				local get_time = ngx.time()  -- 时间粒度 秒级 获得时间戳    ngx.now() 毫秒级
+				local res = nil
+				local key = nil
+				for k,v in pairs(ports_table) do
+					key = get_time..v   -- 时间戳+端口号  使每个请求存到redis的key唯一
+					res = ngx.ctx.redis:setnx(key,1)  --获得锁  key不存在 返回1 存在返回0 value:1 表示繁忙
+					if (res == 1)
+					then
+						ngx.ctx.redis:setex(key,1,1)  --在一段时间内不会分配该端口号，将设置时间戳+端口号的key超时删除，即释放锁
+						local status = ngx.ctx.redis:get(v)
+						-- 获得空闲端口号
+						if (status == "0")
+						then
+							free_port = tonumber(v)
+							ngx.ctx.redis:setex(address,7200,v)  -- 设置俩小时过期
+							break
+						end
+					end
+				end
+				if (free_port == nil)
+				then
+					ngx.say('no free port.')
+					return ngx.exit(ngx.HTTP_SERVICE_UNAVAILABLE)
+				end
+			else
+				free_port = tonumber(port)
+			end
+		end
+	else
+		ngx.say("Not enough parameters to carry.")
+		return ngx.exit(ngx.HTTP_SERVICE_UNAVAILABLE)
+	end
+	ngx.ctx.free_port = free_port
+end
+
+-- 绑定路由端口
+local function bind_route_port()
+	if ngx.ctx.free_port == nil then
+		ngx.say("no free port")
+		return ngx.exit(ngx.HTTP_SERVICE_UNAVAILABLE)
+	end
+	ngx.var.ws_port = ngx.ctx.free_port
+end
+
+-- 延时断开
+local function delay_close(flag)
+	if not flag then 
+		ngx.sleep(1)
+		return ngx.exit(ngx.HTTP_SERVICE_UNAVAILABLE)
+	end 
+end 
+
+-- 创建redis
+conn_redis()
+-- 获取空闲端口
+get_free_port()
+-- 将请求路由到绑定端口
+bind_route_port()
+--ngx.var.ws_port = 4994
