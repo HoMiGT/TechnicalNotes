@@ -16,43 +16,33 @@ printf "切换root用户成功！\\n"
 apt update
 printf "更新现有软件包列表成功！\\n"
 
-apt install apt-transport-https ca-certificates curl software-properties-common
-printf "安装必备软件包成功！\\n"
+apt install docker.io
 
-curl -fsSL https://downloads.docker.com/linux/ubuntu/gpg | apt-key add -
-printf "将Docker版本库的GPG密钥添加到系统中成功！\\n"
+docker --version
+usermod -aG docker admin
+echo "{" > /etc/docker/daemon.json
+echo '    "registry-mirrors":[' >> /etc/docker/daemon.json
+echo '        "http://hub-mirror.c.163.com"' >> /etc/docker/daemon.json
+echo '    ],' >> /etc/docker/daemon.json
+echo '    "insecure-registries":[' >> /etc/docker/daemon.json
+echo '        "10.0.17.100"' >> /etc/docker/daemon.json
+echo '    ]' >> /etc/docker/daemon.json
+ehoc '}' >> /etc/docker/daemon.json
 
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
-printf "将Docker版本库添加到APT源成功！\\n"
+systemctl restart docker
 
-apt update
-printf "更新源库成功！\\n"
+docker info | grep -E "Registry|http"
 
-apt-cache policy docker-ce
-printf "更新Docker软件包库成功！\\n"
+su admin
+docker info
+
+docker run hello-world
+docker ps -a
 
 
-apt install docker-ce
-printf "安装官方Docker库成功！\\n"
 
-printf "查看Docker的运行状态\\n"
-systemctl status docker 
 
-read -p "是否将admin添加到docker组(0-否，1-是)>>>" is_add_group
-if [ "$is_add_group"="0" ]
-then 
-  exit 1
-elif [ "$is_add_group"="1" ]
-then 
-  groupadd docker
-  printf "将admin用户添加到docker组中\\n"
-  usermod -aG docker admin
-  systemctl restart docker
-else
-  exit 1
-fi 
 
-printf "退出Docker执行安装脚本"
 
 
 
