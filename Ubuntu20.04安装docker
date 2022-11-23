@@ -22,7 +22,7 @@ printf "安装必备软件包成功！\\n"
 curl -fsSL https://downloads.docker.com/linux/ubuntu/gpg | apt-key add -
 printf "将Docker版本库的GPG密钥添加到系统中成功！\\n"
 
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable"
 printf "将Docker版本库添加到APT源成功！\\n"
 
 apt update
