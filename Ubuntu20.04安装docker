@@ -1,0 +1,61 @@
+printf "切换root用户\\n"
+read -s -p "root 密码：>>>" root_passwd
+if [ "$root_passwd"="q" -o "$root_passwd"="Q" ]
+then 
+  printf "退出安装程序\\n"
+  exit 2
+fi 
+
+echo $root_passwd | su root
+if [ $? -ne 0 ]
+then 
+  printf "输入的密码有误，切换root用户失败\\n"
+fi 
+printf "切换root用户成功！\\n"
+
+apt update
+printf "更新现有软件包列表成功！\\n"
+
+apt install apt-transport-https ca-certificates curl software-properties-common
+printf "安装必备软件包成功！\\n"
+
+curl -fsSL https://downloads.docker.com/linux/ubuntu/gpg | apt-key add -
+printf "将Docker版本库的GPG密钥添加到系统中成功！\\n"
+
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+printf "将Docker版本库添加到APT源成功！\\n"
+
+apt update
+printf "更新源库成功！\\n"
+
+apt-cache policy docker-ce
+printf "更新Docker软件包库成功！\\n"
+
+
+apt install docker-ce
+printf "安装官方Docker库成功！\\n"
+
+printf "查看Docker的运行状态\\n"
+systemctl status docker 
+
+read -p "是否将admin添加到docker组(0-否，1-是)>>>" is_add_group
+if [ "$is_add_group"="0" ]
+then 
+  exit 1
+elif [ "$is_add_group"="1" ]
+then 
+  groupadd docker
+  printf "将admin用户添加到docker组中\\n"
+  usermod -aG docker admin
+  systemctl restart docker
+else
+  exit 1
+fi 
+
+printf "退出Docker执行安装脚本"
+
+
+
+
+
+
