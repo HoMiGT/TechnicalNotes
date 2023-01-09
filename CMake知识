@@ -4,15 +4,17 @@ cmake - find_package
         每个以 Find<PackageName>.cmake 命名的文件都对应着<PackageName>相应的包。可以通过CMakeLists.txt里的find_package()函数引用。
         
         假设项目中需要引入CURL库，添加如下代码在CMakeLists.txt即可
-          
-          find_package(CURL)
-          add_executable(curltest curltest.cc)
-          if(CURL_FOUND)
-            target_include_directores(clib PRIVATE ${CURL_INCLUDE_DIR})
-            target_link_libraries(curltest ${CURL_LIBRARY})
-          else(CURL_FOUND)
-            message(FATAL_ERROR "CURL library not found")
-          endif(CURL_FOUND)
+
+```          
+find_package(CURL)
+add_executable(curltest curltest.cc)
+if(CURL_FOUND)
+    target_include_directores(clib PRIVATE ${CURL_INCLUDE_DIR})
+    target_link_libraries(curltest ${CURL_LIBRARY})
+else(CURL_FOUND)
+    message(FATAL_ERROR "CURL library not found")
+endif(CURL_FOUND)
+```
 
         对于系统预定义的 Find<PackageName>.cmake 模块，都会定义如下几个变量
           <PackageName>_FOUND :  表示模块是否被找到
@@ -34,16 +36,16 @@ cmake - find_package
         cmake --build build --target install
         
         此时我们就可以通过与引入curl库一样的方式引入glog库了
-        
-        find_package(glog)
-        add_executable(glogtest glogtest.cc)
-        if(GLOG_FOUND)
-          # 由于glog在链接时将头文件直接链接到了库里面
-          target_link_libraries(glogtest glog::glog)
-        else(GLOG_FOUND)
-          message(FATAL_ERROR "glog library not found")
-        endif(GLOG_FOUND)
-        
+```
+find_package(glog)
+add_executable(glogtest glogtest.cc)
+if(GLOG_FOUND)
+# 由于glog在链接时将头文件直接链接到了库里面
+    target_link_libraries(glogtest glog::glog)
+else(GLOG_FOUND)
+    message(FATAL_ERROR "glog library not found")
+endif(GLOG_FOUND)
+```        
   原理: find_package 是如何找到我们的库的，有俩种模式，Module模式和Config模式。
         Module模式，也就是引入curl库的方式，FindCURL.cmake 将项目引入头文件路径和库文件路径。
                    搜索的路径有俩个，一个是 <path_cmake_installed>/share/cmake/Modules,另一个是我们指定的CMAKE_MODULE_PATH所在的目录
