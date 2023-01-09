@@ -334,7 +334,7 @@ cmake - 如何编写自己的共享库
    最后我们在其他项目中的CMakeLists.txt，就可以使用
    
     find_package(MyMath 1.0)
-    target_linked_library(otherapp MyMath::mymath)
+    target_linked_libraries(otherapp MyMath::mymath)
      
    来引用我们的函数库了。
    
