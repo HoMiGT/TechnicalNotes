@@ -1,0 +1,11 @@
+
+visual studio release 版本
+
+打开至 release 的目录下终端执行
+
+C:\Qt\6.4.1\msvc2019_64\bin\windeployqt.exe StarCodeGen.exe --release
+
+下载 https://enigmaprotector.com/assets/files/enigmavb.exe 
+
+添加 递归文件夹 然后生成就ok了, StarCodeGen_boxed.exe 是程序入口
+
