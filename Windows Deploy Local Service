@@ -1,0 +1,7 @@
+
+sc.exe create MyService binpath= "E:/distribute_exe/CronCopyDir/CronCopyDir.exe"
+
+sc.exe start MyService
+
+sc.exe delete MyService
+
