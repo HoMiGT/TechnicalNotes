@@ -1,7 +1,9 @@
 
 sc.exe create MyService binpath= "E:/distribute_exe/CronCopyDir/CronCopyDir.exe"
 
-sc.exe start MyService
+sc.exe config CronCopyDirService start=auto
+
+net start MyService / sc.exe start MyService       net stop MyService
 
 sc.exe delete MyService
 
