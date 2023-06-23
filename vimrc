@@ -59,9 +59,7 @@ set number
 set relativenumber
 set cursorline
 set textwidth=120
-set wrap
-set linebreak
-set wrapmargin=2
+set nowrap
 set scrolloff=5
 set sidescrolloff=5
 set laststatus=2
