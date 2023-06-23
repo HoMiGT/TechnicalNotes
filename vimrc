@@ -75,6 +75,8 @@ set history=2000
 set undodir=~/.vim/.undo//
 set wildmenu
 set wildmode=longest:list,full
+" 设置快捷键 在normal模式下 r 就代表要执行之后所有的命令  :! 表示在终端执行  vim内置支持make所以可以不用! 
+nnoremap r :!rm -rf main:wa<CR>:make<CR><CR>:cw<CR>:!./main<CR>
 
 
 备注：参考配置说明(https://www.ruanyifeng.com/blog/2018/09/vimrc.html)
