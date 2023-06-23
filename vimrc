@@ -1,6 +1,11 @@
-# vim ~/.vimrc
+一定要通过vundle来管理vim的插件
+vundle的安装
+$ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+
+$ vim ~/.vimrc
 
 " vundle 环境配置
+set nocompatible
 filetype off
 set rtp+=~/.vim/bundle/Vundle.vim
 " vundle 管理插件列表必须位于 vundle#begin()和vundle#end()之间
@@ -35,7 +40,6 @@ Plugin 'suan/vim-instant-markdown'
 Plugin 'lilydjwg/fcitx.vim'
 call vundle#end()
 filetype plugin indent on
-set nocompatible
 syntax on
 set showmode
 set showcmd
@@ -74,3 +78,7 @@ set wildmode=longest:list,full
 
 vim的插件管理文章
 https://wizardforcel.gitbooks.io/use-vim-as-ide/content/2.html
+
+配置vim cpp 通过clang提示  
+$ cd ~/.vim/bundle/YouCompleteMe
+$ python3 install.py --clangd-completer
