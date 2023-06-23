@@ -38,3 +38,6 @@ set wildmode=longest:list,full
 
 
 备注：参考配置说明(https://www.ruanyifeng.com/blog/2018/09/vimrc.html)
+
+vim的插件管理文章
+https://wizardforcel.gitbooks.io/use-vim-as-ide/content/2.html
