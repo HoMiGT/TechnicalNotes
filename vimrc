@@ -1,4 +1,9 @@
 一定要通过vundle来管理vim的插件
+
+安装插件需要在ubuntu系统安装的库
+$ sudo apt install fcitx5 exuberant-ctags vim-nox mono-complete golang nodejs openjdk-17-jdk openjdk-17-jre npm cmake python3-dev
+
+
 vundle的安装
 $ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 
