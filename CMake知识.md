@@ -3,7 +3,7 @@ cmake - find_package
   官方库: cmake 官方预定义了依赖包的Module，以Mac通过brew安装的cmake为例，存储在 /usr/local/Cellar/cmake/3.25.1/share/cmake/Modules
         每个以 Find<PackageName>.cmake 命名的文件都对应着<PackageName>相应的包。可以通过CMakeLists.txt里的find_package()函数引用。
         
-        假设项目中需要引入CURL库，添加如下代码在CMakeLists.txt即可
+假设项目中需要引入CURL库，添加如下代码在CMakeLists.txt即可
 
 ```          
 find_package(CURL)
@@ -16,12 +16,12 @@ else(CURL_FOUND)
 endif(CURL_FOUND)
 ```
 
-        对于系统预定义的 Find<PackageName>.cmake 模块，都会定义如下几个变量
+对于系统预定义的 Find<PackageName>.cmake 模块，都会定义如下几个变量
           <PackageName>_FOUND :  表示模块是否被找到
           <PackageName>_INCLUDE_DIR / <PackageName>_INCLUDES : 库头文件
           <PackageName>_LIBRARY / <PackageName>_LIBRARIES : 动态库/静态库
   
-  非官方库: find_package()仅对cmake编译的库有效
+非官方库: find_package()仅对cmake编译的库有效
         不是通过cmake编译的库，需要先通过cmake库编译之后再使用
         
         例如 引入 glog库来进行日志记录，我们在 .../Module 的目录下未找到 FindGlog.cmake 因此需要我们自行安装glog库
