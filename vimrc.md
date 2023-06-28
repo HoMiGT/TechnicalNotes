@@ -1,20 +1,24 @@
 一定要通过vundle来管理vim的插件
 
 安装插件需要在ubuntu系统安装的库
-$ sudo apt install fcitx5 exuberant-ctags vim-nox mono-complete golang nodejs openjdk-17-jdk openjdk-17-jre npm cmake python3-dev
+
+`$ sudo apt install fcitx5 exuberant-ctags vim-nox mono-complete golang nodejs openjdk-17-jdk openjdk-17-jre npm cmake python3-dev`
 
 ---
+
 vundle的安装
-$ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+
+`$ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim`
 
 ---
-$ vim ~/.vimrc
->" vundle 环境配置
->set nocompatible
->filetype off
->set rtp+=~/.vim/bundle/Vundle.vim
->" vundle 管理插件列表必须位于 vundle#begin()和vundle#end()之间
->call vundle#begin()
+`$ vim ~/.vimrc`
+```
+" vundle 环境配置
+set nocompatible
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+" vundle 管理插件列表必须位于 vundle#begin()和vundle#end()之间
+call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'tomasr/molokai'
@@ -77,13 +81,18 @@ set wildmenu
 set wildmode=longest:list,full
 " 设置快捷键 在normal模式下 r 就代表要执行之后所有的命令  :! 表示在终端执行  vim内置支持make所以可以不用! 
 nnoremap r :!rm -rf main:wa<CR>:make<CR><CR>:cw<CR>:!./main<CR>
+```
+--- 
 
+备注：
 
-备注：参考配置说明(https://www.ruanyifeng.com/blog/2018/09/vimrc.html)
+[参考配置说明](https://www.ruanyifeng.com/blog/2018/09/vimrc.html)
+[vim的插件管理文章](https://wizardforcel.gitbooks.io/use-vim-as-ide/content/2.html)
 
-vim的插件管理文章
-https://wizardforcel.gitbooks.io/use-vim-as-ide/content/2.html
+--- 
 
 配置vim cpp 通过clang提示  
+```
 $ cd ~/.vim/bundle/YouCompleteMe
 $ python3 install.py --clangd-completer
+```
