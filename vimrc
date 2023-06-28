@@ -3,18 +3,18 @@
 安装插件需要在ubuntu系统安装的库
 $ sudo apt install fcitx5 exuberant-ctags vim-nox mono-complete golang nodejs openjdk-17-jdk openjdk-17-jre npm cmake python3-dev
 
-
+---
 vundle的安装
 $ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 
+---
 $ vim ~/.vimrc
-
-" vundle 环境配置
-set nocompatible
-filetype off
-set rtp+=~/.vim/bundle/Vundle.vim
-" vundle 管理插件列表必须位于 vundle#begin()和vundle#end()之间
-call vundle#begin()
+>" vundle 环境配置
+>set nocompatible
+>filetype off
+>set rtp+=~/.vim/bundle/Vundle.vim
+>" vundle 管理插件列表必须位于 vundle#begin()和vundle#end()之间
+>call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'tomasr/molokai'
