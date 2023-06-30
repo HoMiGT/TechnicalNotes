@@ -27,5 +27,5 @@
 > -DWITH_ITT=OFF
 > -DCV_DISABLE_OPTIMIZATION=ON
 > ```
-> * vcpkg编译 
+> * vcpkg编译    
 > `vcpkg install opencv4:wasm32-emscripten --no-downloads --editable`
