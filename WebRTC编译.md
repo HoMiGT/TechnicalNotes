@@ -33,7 +33,17 @@ solutions = [
 
 ```
 
-5. 运行gclient sync
+5. 运行gclient sync 同步源码
 ```shell
 date;gclient sync;date
 ```
+
+6. 编译源码
+```shell
+sudo dnf install epel-release redhat-lsb-core
+./build/
+```
+
+
+备注：
+  [开源库](https://ftp.gnu.org/gnu) 
