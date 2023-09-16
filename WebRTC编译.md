@@ -12,8 +12,28 @@ export PATH=$PATH:/home/admin/tools/depot_tools
 ```
 
 3. 下载webrtc源码
-```
+```shell
 mkdir webrtc
 cd webrtc
 fetch --nohooks webrtc
+```
+
+4. 编辑.gclient文件
+```shell
+vim .gclient
+
+solutions = [
+  { 
+    "name"     : "src",  
+    "url"      : "https://webrtc.googlesource.com/src", 
+    "managed"  : False,  
+    "custom_deps": {},  
+  },
+]
+
+```
+
+5. 运行gclient sync
+```shell
+date;gclient sync;date
 ```
