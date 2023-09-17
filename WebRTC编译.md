@@ -18,7 +18,7 @@ export PATH=$PATH:/home/admin/tools/depot_tools
 ```shell
 mkdir webrtc
 cd webrtc
-fetch --nohooks webrtc
+fetch --nohooks webrtc   # 使用googlesource.com 时可以使用安装
 ```
 
 4. 编辑.gclient文件
