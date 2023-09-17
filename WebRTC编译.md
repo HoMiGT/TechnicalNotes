@@ -44,7 +44,8 @@ date;gclient sync;date
 6. 编译源码
 ```shell
 sudo dnf install epel-release redhat-lsb-core
-./build/
+gn gen out/Release "--args=is_debug=false"
+ninja -C out/Release
 ```
 
 
