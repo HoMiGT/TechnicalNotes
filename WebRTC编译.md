@@ -4,6 +4,9 @@ WebRTC安装步骤
 
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
+国内镜像
+git clone https://webrtc.bj2.agoralab.co/webrtc-mirror/depot_tools.git
+
 ```
 
 2. 配置环境变量
