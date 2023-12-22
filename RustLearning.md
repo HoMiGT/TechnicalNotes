@@ -19,3 +19,16 @@
 > *b = 2;
 > println!("{b}");
 > ```
+>  * 不可编译通过的版本
+> ```rust
+> let mut a = 10u32;
+> let b = &mut a;
+> *b = 2;
+> let c = &a;
+> println!("{b}");
+> // ***************************
+> let mut a = 10u32;
+> let c = &a;
+> let b = &mut a;
+> println!("{c}");
+> ```
