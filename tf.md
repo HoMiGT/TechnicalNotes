@@ -1,2 +1,13 @@
-# tf binary url 
+# 1. tf binary url 
 > [tf_binary_so](https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-2.13.0.tar.gz)
+
+# 2. nvidia
+## a. 显卡、cuda、cuda toolkit的关系
+> 三者关系灵活，皆可灵活配置，需要注意的是 有些toolkit的开发是在选定版本开发的，因此，会有 >= cuda版本的要求     
+> 三者关系：显卡提供硬件基础，cuda定义软件架构与平台，抽象层，cuda toolkit实现cuda平台到实际硬件的映射与工具支持，是连接和实现二者映射的桥梁。    
+> **显卡** : 计算机中的一种重要组件，用于处理图形和图像相关的任务，是物理硬件。含*GPU*、*显存*、*显示接口*、*渲染管线*、*显卡驱动程序*、*显卡性能参数*等。    
+> **cuda** : 是nvidia开发的并行计算平台和并行计算架构。可以看作是一个GPU计算的操作系统，定义了可在GPU硬件上运行的程序模型、指令集、内存模型等。安装gpu的驱动，实际就是安装对应的指令集，内存模型。    
+> **cuda toolkit** : 实现cuda功能的软件开发工具包，提供了开发，编译，调试基于cuda的GPU应用的所有必要工具。主要包含：cuda驱动(访问硬件)，cuda运行时库(部署和运行cuda程序时需要链接库)，编译调试分析工具等。  
+> 显卡，cuda，cuda toolkit 均可单独安装，需要注意 >= 版本。其中cuda toolkit里含有对应cuda驱动的安装，所以可以不用专门安装cuda的驱动。      
+> [显卡，cuda，cuda toolkit版本对应](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html)    
+> [cuda toolkit下载](https://developer.nvidia.com/cuda-11-8-0-download-archive)   其中 cuda-11-8-0-download-archive，11-8-0可以替换成自己想要下载的对应版本。        
