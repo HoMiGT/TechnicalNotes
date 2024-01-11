@@ -10,9 +10,9 @@
 > **cuda** : 是nvidia开发的并行计算平台和并行计算架构。可以看作是一个GPU计算的操作系统，定义了可在GPU硬件上运行的程序模型、指令集、内存模型等。安装gpu的驱动，实际就是安装对应的指令集，内存模型。    
 > **cuda toolkit** : 实现cuda功能的软件开发工具包，提供了开发，编译，调试基于cuda的GPU应用的所有必要工具。主要包含：cuda驱动(访问硬件)，cuda运行时库(部署和运行cuda程序时需要链接库)，编译调试分析工具等。  
 > 显卡，cuda，cuda toolkit 均可单独安装，需要注意 >= 版本。其中cuda toolkit里含有对应cuda驱动的安装，所以可以不用专门安装cuda的驱动。      
-> [显卡，cuda，cuda toolkit版本对应](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html)
-> [cuda toolkit下载](https://developer.nvidia.com/cuda-11-8-0-download-archive)   其中 cuda-11-8-0-download-archive，11-8-0可以替换成自己想要下载的对应版本。
-> 驱动可单独选择指定版本下载，**如果cuda toolkit安装了驱动就不需要此步骤了** [nvidia驱动](https://www.nvidia.cn/Download/index.aspx?lang=cn)   选择与硬件对应的版本。
+> [显卡，cuda，cuda toolkit版本对应](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html)       
+> [cuda toolkit下载](https://developer.nvidia.com/cuda-11-8-0-download-archive)   其中 cuda-11-8-0-download-archive，11-8-0可以替换成自己想要下载的对应版本。      
+> 驱动可单独选择指定版本下载，**如果cuda toolkit安装了驱动就不需要此步骤了** [nvidia驱动](https://www.nvidia.cn/Download/index.aspx?lang=cn)   选择与硬件对应的版本。      
 ## b. 下载安装部署环境变量
 > 下载安装cuda toolkit的步骤，默认会选择安装对应版本的驱动
 > ```Shell
