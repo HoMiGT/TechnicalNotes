@@ -1,4 +1,12 @@
 # 机器学习
+> |Python库|Rust替代库|教程|
+> |:--:|:--:|:--:|
+> |numpy|ndarray|RustML之ndarray|
+> |pandas|polars|RustML之polars|
+> |scikit-learn|linfa|RustML之linfa|
+> ||||
+> ||||
+> ||||
 ## 1. 基础概念
 > * 概念：是一门通过编程让计算机从数据中进行学习的科学和艺术。
 > * 通用定义：
