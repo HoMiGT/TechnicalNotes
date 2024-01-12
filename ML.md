@@ -1,12 +1,12 @@
 # 机器学习
-> |Python库|Rust替代库|教程|
+> |Python库|Rust替代库|库地址|
 > |:--:|:--:|:--:|
-> |numpy|ndarray|RustML之ndarray|
-> |pandas|polars|RustML之polars|
-> |scikit-learn|linfa|RustML之linfa|
-> ||||
-> ||||
-> ||||
+> |numpy|ndarray|[RustML之ndarray](https://crates.io/crates/ndarray)|
+> |pandas|polars|[RustML之polars](https://crates.io/crates/polars)|
+> |scikit-learn|linfa|[RustML之linfa](https://crates.io/crates/linfa)|
+> |matplotlib|plotters|[RustML之plotters](https://crates.io/crates/plotters)|
+> |pytorch|tch-rs|[RustML之tch-rs](https://crates.io/crates/tch)|
+> |networks|petgragh|[RustML之petgraph](https://github.com/petgraph/petgraph)|
 ## 1. 基础概念
 > * 概念：是一门通过编程让计算机从数据中进行学习的科学和艺术。
 > * 通用定义：
