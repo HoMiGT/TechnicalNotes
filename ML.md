@@ -155,3 +155,27 @@
 >   * 网格搜索：手动调整超参数，直到找到一组很好的超参数组合。scikit-learn GridSearchCV 
 > 7. 展示解决方案
 > 8. 启动、监控和维护系统
+## 6. 分类问题
+> ### 1. 二元分类器
+> * 随机梯度下降(SGD)分类器，有效处理非常大型的数据集，非常适合在线学习
+> ### 2. 性能测量
+> * cross_val_score(准确率)  K-折交叉验证法 准确率通常无法成为分类器的首要性能指标
+> * cross_val_predict(混淆矩阵) K-折交叉验证法 **评估分类器性能首选**
+>   $$精度=\frac{TP}{TP+FP}$$
+>   其中 TP是真正类的数量，FP是假正类的数量。
+>   $$召回率=\frac{TP}{TP+FN}$$
+>   其中 FN是假负类的数量
+> ```mermaid
+> quadrantChart
+>   title 四象限
+>   x-axis Negative --> Positive
+>   y-axis Positive --> Negative
+>   quadrant-1 "FP"
+>   quadrant-2 "TN"
+>   quadrant-3 "FN"
+>   quadrant-4 "TP"
+> ```
+> ### 3. 多分类器
+> ### 4. 误差分析
+> ### 5. 多标签分类
+> ### 6. 多输出分类 
