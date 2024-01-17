@@ -165,16 +165,22 @@
 >   其中 TP是真正类的数量，FP是假正类的数量。
 >   $$召回率=\frac{TP}{TP+FN}$$
 >   其中 FN是假负类的数量
-> ```mermaid
-> quadrantChart
->   title 四象限
->   x-axis Negative --> Positive
->   y-axis Positive --> Negative
->   quadrant-1 "FP"
->   quadrant-2 "TN"
->   quadrant-3 "FN"
->   quadrant-4 "TP"
+>   精度通常与另一个指标一起使用，这个指标就是召回率，也称为灵敏度或者真正类率
+> ```Python
+> from sklearn.metrics import precision_score,recall_score
+> precision_score(y_train_5,y_train_pred)  # 精度
+> recall_score(y_train_5,y_train_pred)  # 召回率
 > ```
+> $$F_1=\frac{2}{\frac{1}{精度} + \frac{1}{召回率}} = 2 * \frac{精度*召回率}{精度+召回率} = \frac{TP}{TP+ \frac{FN+FP}{2}}$$
+> 要计算出 $F_1$ 分数，只需要调用如下函数
+> ```Python
+> from sklearn.metrics import f1_score
+> f1_score(y_train_5,y_train_pred)
+> ```
+> * 精度/召回率权衡，不能同时增加精度又减少召回率，反之亦然
+>   提高阈值 decision_function() 该方法返回每个实例的分数，根据这些分数，使用任意阈值进行预测       
+>   
+>   
 > ### 3. 多分类器
 > ### 4. 误差分析
 > ### 5. 多标签分类
