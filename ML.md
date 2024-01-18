@@ -160,7 +160,7 @@
 > * 随机梯度下降(SGD)分类器，有效处理非常大型的数据集，非常适合在线学习
 > ### 2. 性能测量
 > * cross_val_score(准确率)  K-折交叉验证法 准确率通常无法成为分类器的首要性能指标
-> * cross_val_predict(混淆矩阵) K-折交叉验证法 **评估分类器性能首选**
+> * cross_val_predict(混淆矩阵) K-折交叉验证法 **评估分类器性能首选** 返回是决策分数，而非预测结果
 >   $$精度=\frac{TP}{TP+FP}$$
 >   其中 TP是真正类的数量，FP是假正类的数量。
 >   $$召回率=\frac{TP}{TP+FN}$$
@@ -179,9 +179,49 @@
 > ```
 > * 精度/召回率权衡，不能同时增加精度又减少召回率，反之亦然
 >   提高阈值 decision_function() 该方法返回每个实例的分数，根据这些分数，使用任意阈值进行预测       
->   
+> ```Python
+> from sklearn.metrics import roc_auc_score
+> roc_auc_score(y_train_5,y_scores)
+> ```
 >   
 > ### 3. 多分类器
+> * sklearn.svm.SVC 支持向量机分类器
+> * sklearn.multiclass.OneVsRestClassifier 一对剩余策略分类器
+> ```Python
+> from sklearn.svm import SVC
+> from sklearn.multiclass import OneVsRestClassifier
+> ovr_clf = OneVsRestClassifier(SVC())
+> ovr_clf.fit(X_train,y_train)  
+> ovr_clf.predict([some_digit])
+> ```
+> * sklearn.linear_model.SGDClassifier  SGD分类器直接可以将实例分为多个类，调用decision_function() 可以获得分类器将每个实例分类为每个类的概率列表
 > ### 4. 误差分析
+> 尝试多个模型，列出最佳模型并用GridSearchCV对其超参数进行微调，尽可能自动化。
+> 假如已经找到一个有潜力的模型，希望找到一些方法对其进一步改进，方法之一就是分析其错误类型。
+> 首先看混淆矩阵，使用cross_val_predict()函数进行预测，然后调用confusion_matrix()函数
+> ```Python
+> y_train_pred = cross_val_predict(sgd_clf,X_train_scaled,y_train,cv=3)
+> conf_mx = confusion_matrix(y_train,y_train_pred)
+> print(conf_mx)
+> plt.matshow(conf_mx,cmap=plt.cm.gray)
+> plt.show() 
+> ```
 > ### 5. 多标签分类
-> ### 6. 多输出分类 
+> * sklearn.neighbors.KNeighborsClassifier
+> ```Python
+> from sklearn.neighbors import KNeighborsClassifier
+> y_train_large = (y_train>=7)
+> y_train_odd = (y_train %2==1)
+> y_multilabel = np.c_[y_train_large,y_train_odd]
+>
+> knn_clf = KNeighborsClassifier()
+> knn_clf.fit(X_train,y_multilabel)
+> knn_clf.predict([some_digit])
+> ```
+>   评估多标签分类
+> ```Python
+> y_train_knn_pred = cross_val_predict(knn_clf,X_train,y_multilabel,cv=3)
+> f1_score(y_multilabel,y_train_knn_pred,average="macro")  # 根据自身权重 average="weighted" 
+> ```
+> ### 6. 多输出分类
+> 有噪音，依然可以正常识别出分类
