@@ -234,7 +234,7 @@
 >
 >
 > 线性回归模型的MES成本函数
-> $$MSE(\theta) = (X,h_\theta) = \frac{1}{n} \sum_{i=1}{n} (\theta^T x_i - y_i)^2$$
+> $$MSE(\theta) = (X,h_\theta) = \frac{1}{n} \sum_{i=1}{n} (\theta^T x^(i) - y^(i))^2$$
 >
 > 
 > 标准方程,为了得到使成本函数最小的 $\theta$ 值
@@ -244,3 +244,20 @@
 > ### 2. 梯度下降
 > 梯度下降的中心思想就是迭代地调整参数从而使成本函数最小化
 > 梯度下降一个重要参数使 **步长**，取决于超参数学习率。
+> ### 3. 批量梯度下降
+> 成本函数的偏导数
+> $$\frac{\partial}{\partial \theta_j}MSE(\theta) = \frac{2}{m} \sum_{i=1}^{m} (\theta^T x^{(i)} - y^{(i)}) x_j^{(i)}$$
+> 对偏导数的一次性计算公式     
+> $$\nabla_\theta MSE(\theta) = \frac{2}{m}X^T(X \theta-y)$$
+> 梯度下降步骤
+> $$\theta^{(下一步)}=\theta-\eta \nabla_\theta MSE(\theta)$$
+> 其中 $\eta$ 是学习率，用梯度向量乘以 $\eta$ 确定下坡步长的大小
+> ```Python
+> eta = 0.1  # 学习率
+> n_iterations = 1000
+> m = 100
+> theta = np.random.randn(2,1)
+> for iteration in range(n_iterations):
+>     gradients  = 2/m * X_b.T.dot(X_b.dot(theta) - y)
+>     theta = theta - eta * gradients
+> ```
