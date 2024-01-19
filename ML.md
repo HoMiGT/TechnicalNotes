@@ -281,4 +281,85 @@
 > sklearn.linear_model.SGDRegressor
 > 小批量梯度下降 
 > ### 5. 多项式回归
-> 
+> 当存在多个特征时，多项式回归能够找到特征之间的关系。PolynomialFeatures还可以将特征的所有组合添加到给定的多项式阶数
+> ### 6. 学习曲线
+> 改善过拟合模型的一种方法时向其提供更多的**训练数据**，直到验证误差达到训练误差为止。
+> 偏差/方法权衡
+>   统计学和机器学习的重要理论成果是以下事实：模型的泛化误差可以表示为三个非常不同的误差之和：
+>     * 偏差(这部分泛化误差的原因在于错误的假设)
+>     * 方差(由于模型对训练数据的细微变化过于敏感，具有许多自由度的模型)
+>     * 不可避免的误差(数据本身的噪声所致，减少这部分误差的唯一方法就是清理数据)
+>
+> 增加模型的复杂度通常会显著提升模型的方差并减少偏差。反过来，降低模型的复杂度则会提升模型的偏差并降低方差，这就是为什么称其为权衡      
+> ### 7. 正则化线性模型 (正则，就是规范行为)
+> 减少过拟合的一个好的方法是对模型进行正则化(即约束模型): 拥有的自由度越少，则过拟合数据的难度就越大
+> 对于线性模型，正则化通常是通过约束模型的权重来实现的
+>   * 岭回归
+>     岭回归(Tikhonov正则化)，是线性回归的正则化版本。     
+>     在训练期间将正则化项添加到成本函数中。训练完模型后，使用非正则化的性能度量来评估模型的性能     
+>     岭回归成本函数    
+>     $$J(\theta)=MSE(\theta)+\alpha \frac{1}{2} \sum_{i=1}^{n} \theta_{i}^2$$
+>     偏置项 $\theta_0$ 没有进行正则化。在岭回归之前缩放数据很重要，因为对输入特征的缩放敏感。大多数正则化模型都需要如此。   
+>     闭式解的岭回归
+>     $$\hat{\theta}=(X^T X + \alpha A)^{-1}X^Ty$$
+>     ```Python
+>     from sklearn.linear_model import Ridge
+>     ridge_reg = Ridge(alpha=1,solver="cholesky")
+>     ridge_reg.fit(X,y)
+>     ridge_reg.predict([[1.5]])
+>
+>     sgd_reg = SGDRegressor(penalty="l2")  # 设置l2表示SGD在成本函数中添加一个正则项，等于权重向量的l2范数的平方的一半，即岭回归     
+>     sgd_reg.fit(X,y.ravel())
+>     sgd_reg.predict([[1.5]])
+>     ```
+>   * Lasso回归   
+>     最小绝对收缩和选择算子回归，是增加的权重向量的l1范数，而不是l2范数的平方的一半       
+>     Lasso回归成本函数      
+>     $$J(\theta)=MSE(\theta)+\alpha \sum_{i=1}^{n} |\theta_i|$$
+>     ```Python
+>     from sklearn.linear_model import Lasso
+>     lasso_reg = Lasso(alpha=0.1)
+>     lasso_reg.fit(X,y)
+>     lasso_reg.predict([[1.5]])
+>
+>     sgd_reg = SGDRegressor(penalty="l1")  # 设置l1表示 Lasso回归
+>     sgd_reg.fit(X,y.ravel())
+>     sgd_reg.predict([[1.5]])
+>     ```
+>   * 弹性网络
+>     弹性网络介于岭回归和Lasso回归的中间地带。正则项是岭回归和Lasso正则项的简单混合，可以控制混合比r。当r=0时，弹性网络等效于岭回归，当r=1时，弹性网络等效于Lasso回归        
+>     弹性网络的成本函数     
+>     $$J(\theta)=MSE(\theta)+r \alpha \sum_{i=1}^{n} |\theta_i| + \frac{1-r}{2} \alpha \sum_{i=1}^{n} \theta_i^2$$
+>     通常来讲，有正则化--哪怕很小，总比没有更可取一些。大多数情况下，该避免使用纯线性回归。岭回归是个不错的默认选择。
+>     如果，实际用到的特征只有少数几个，那就应该更倾向于Lasso回归或者弹性网络，因为它们将无用特征的权重降为零。一般而言，弹性网络优于Lasso回归
+>     ```Python
+>     from sklearn.linear_model import ElasticNet
+>     elastic_net = ElasticNet(alpha=0.1,l1_ratio=0.5)
+>     elastic_net.fit(X,y)
+>     elastic_net.predict([[1.5]])
+>     ```
+>   * 提前停止
+>     对于梯度下降这一类迭代学习的算法，在验证误差达到最小值时停止训练
+>     使用随机和小批量梯度下降时，曲线不是那么平滑，可能很难知道你是否到达了最小值。一种解决方案是仅在验证错误超过最小值一段时间后停止，然后回滚模型参数到验证误差最小的位置。
+>     ```Python
+>     from sklearn.base import clone
+>     # 预处理数据
+>     poly_scaler = Pipeline([
+>         ("poly_features", PolynomialFeatures(degree=90, include_bias=False)),
+>         ("std_scaler", StandardScaler())
+>     ])
+>     X_train_poly_scaled = poly_scaler.fit_transform(X_train)
+>     X_val_poly_scaled = poly_scaler.transform(X_val)
+>     sgd_reg = SGDRegressor(max_iter=1,tol=-np.infty,warm_start=True,penalty=None,learning_rate="constant",eta0=0.0005)  # warm_start=True 表示停止的地方继续训练，而不是从头开始。
+>     minimum_val_error = float("inf")
+>     best_epoch = None
+>     best_model = None
+>     for epoch in range(1000):
+>         sgd_reg.fit(X_train_poly_scaled,y_train)
+>         y_val_predict = sgd_reg.predict(X_val_poly_scaled)
+>         val_error = mean_squared_error(y_val,y_val_predict)
+>         if val_error < minimum_val_error:
+>             minimum_val_error = val_error
+>             best_epoch = epoch
+>             best_model = clone(sgd_reg)
+>     ```     
