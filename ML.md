@@ -238,13 +238,14 @@
 >
 > 
 > 标准方程,为了得到使成本函数最小的 $\theta$ 值
-> $$\hat{\theta}=(X^TX)^-1 X^T y$$
+> $$\hat{\theta}=(X^TX)^{-1} X^T y$$
 > 其中 $\hat{\theta}$ 是使成本函数最小的 $\theta$ 值
 > y 是包含 $y_1$ 到 $y_m$ 的目标值向量     
 > ### 2. 梯度下降
 > 梯度下降的中心思想就是迭代地调整参数从而使成本函数最小化
 > 梯度下降一个重要参数使 **步长**，取决于超参数学习率。
 > ### 3. 批量梯度下降
+> 主要问题是： 训练集很大时，算法会特别慢     
 > 成本函数的偏导数
 > $$\frac{\partial}{\partial \theta_j}MSE(\theta) = \frac{2}{m} \sum_{i=1}^{m} (\theta^T x^{(i)} - y^{(i)}) x_j^{(i)}$$
 > 对偏导数的一次性计算公式     
@@ -261,3 +262,23 @@
 >     gradients  = 2/m * X_b.T.dot(X_b.dot(theta) - y)
 >     theta = theta - eta * gradients
 > ```
+> ### 4. 随机梯度下降
+> ```Python
+> n_epochs = 50
+> t0, t1 = 5, 50  # 学习计划超参数
+> def learning_schedule(t):
+>     return t0 / (t+t1)
+> theta = np.random.randn(2,1)  # 随机初始化
+> for epoch in range(n_epochs):
+>     for i in range(m):
+>         random_index = np.random.randint(m)
+>         xi = X_b[random_index:random_index+1]
+>         yi = y[random_index:random_index+1]
+>         gradients = 2 * xi.T.dot(xi.dot(theta)-yi)
+>         eta = learning_schedule(epoch * m+i)
+>         theta = theta - eta * gradients
+> ```
+> sklearn.linear_model.SGDRegressor
+> 小批量梯度下降 
+> ### 5. 多项式回归
+> 
