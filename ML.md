@@ -507,5 +507,11 @@
 > * 极端随机树       
 >   极端随机树比常规随机森林要快的很多，因为在每个节点上找到每个特征的最佳阈值是决策生长中最耗时的任务之一
 >   备注：通常很难预先知道一个RandomForestClassifier是否会比一个ExtraTreesClassifier更好或更坏。唯一的方法是俩种都尝试一遍，然后使用交叉验证进行比较，还需要使用网格搜索调整超参数。
-> * 提升法(boosting)
->   
+> * 提升法(boosting)      
+>   sklearn.ensemble.GradientBoostingRegressor 
+> ## 11. 降维
+> 投影和流行学习    
+> * PCA 
+> * 内核PCA
+> * LLE
+> * 其他降维技术
