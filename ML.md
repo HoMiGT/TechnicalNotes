@@ -433,7 +433,7 @@
 > 决策树不稳定，相同的数据集可能训练出不同的模型，正交的决策边界
 > ## 10. 集成学习和随机森林
 > 集成方法将它们组合成一个更强的预测器
-> * 投票分类器    
+> * 投票分类器          
 >   已经训练好了一些分类器，每个分类器的准确率约为80%，大概包括一个逻辑回归分类器，一个SVM分类器，一个随机森林分类，一个k-近邻分类器等等。    
 >   标准：聚合多个分类器的预测结果，投票得出分类类别。    
 >   结果：投票法分类器的准确率通常比集成中最好的分类器还要高。    
@@ -445,8 +445,8 @@
 >   split_ = int(len(y) * 0.8) 
 >   X_train,y_train,X_test,y_test = X[:split_],y[:split_],X[split_:],y[split_:]
 >
->   # 集成学习-投票分类器
->   # 硬投票
+>   # 集成学习-投票分类器     
+>   # 硬投票        
 >   from sklearn.ensemble import RandomForestClassifier
 >   from sklearn.ensemble import VotingClassifier
 >   from sklearn.linear_model import LogisticRegression
@@ -467,7 +467,7 @@
 >     print(clf.__class__.__name__,accuracy_score(y_test,y_pred))
 >
 >
->   # 软投票
+>   # 软投票      
 >   svm_clf = SVC(probability=True)
 >   voting_clf = VotingClassifier(
 >     estimators=[('lr',log_clf),('rf',rnd_clf),('svc',svm_clf)],
@@ -481,7 +481,7 @@
 >     print(clf.__class__.__name__,accuracy_score(y_test,y_pred))
 >   
 >   ```  
-> * bagging和pasting
+> * bagging和pasting       
 >   bagging: 采样放回样本，自举汇聚法。
 >   pasting：采样样本不放回
 >   ```Python
@@ -498,13 +498,14 @@
 >   y_pred = bag_clf.predict_proba(X_test)   # 使用该方法，自动执行软投票而不是硬投票
 >   ```
 >   总结: bagging生成的模型通常更好，原因是自举法给每个预测器的训练子集引入了更高的多样性，所以最后bagging比pasting的偏差略高，预测器之间的关联度更低，所以集成的方法降低。
-> * 随机补丁和随机子空间
+> * 随机补丁和随机子空间       
 >   对处理高维输入(例如图像)特别有用。对训练实例和特征都进行抽样，这称为随机补丁方法。
 >   保留所有训练实例(即bootstrap=False且max_samples=1.0)但是对特征进行抽样(即bootstrap_features=True并且 max_features<1.0) 这称为随机子空间法。
 >   对特征抽样给预测器带来更大的多样性，所以以略高一点的偏差换取了更低的方差。
-> * 随机森林
+> * 随机森林      
 >   随机森林是决策树的集成，通常用bagging，训练集大小通过max_samples来设置。除了先构建一个BaggingClassifier然后传入DecisionTreeClassifier，还有一种方法就是使用RandomForestClassifier。
-> * 极端随机树
+> * 极端随机树       
 >   极端随机树比常规随机森林要快的很多，因为在每个节点上找到每个特征的最佳阈值是决策生长中最耗时的任务之一
 >   备注：通常很难预先知道一个RandomForestClassifier是否会比一个ExtraTreesClassifier更好或更坏。唯一的方法是俩种都尝试一遍，然后使用交叉验证进行比较，还需要使用网格搜索调整超参数。
-> * 
+> * 提升法(boosting)
+>   
