@@ -362,4 +362,149 @@
 >             minimum_val_error = val_error
 >             best_epoch = epoch
 >             best_model = clone(sgd_reg)
->     ```     
+>     ```
+>
+> ### 8. 逻辑回归
+> * 估计概率    
+>   逻辑回归模型的估计概率(向量化形式)    
+>   $$\hat{p}=h_\theta(x)=\sigma(x^T \theta)$$    
+>   其中 $\sigma$ 是一个sigmoid函数(即S型函数)，输出一个介于0和1之间的数字        
+>   逻辑函数    
+>   $$\sigma(t)=\frac{1}{1+exp(-t)}$$
+>   逻辑回归模型预测     
+>   $$\hat{y} = \begin{cases} 0, \hat{p} < 0.5 \ 1,\hat{p} geq 0.5 \end{cases}$$
+> * 训练和成本函数    
+>   逻辑回归成本函数(对数损失)    
+>   $$J(\theta)=- \frac{1}{m} \sum_{i=1}^{m} [y^{(i)}log(\hat{p}^{(i)}+(1-y^{(i)}))log(1-\hat{p}^{(i)})]$$
+>   逻辑成本函数偏导数
+>   $$\frac{\partial}{\partial \theta_j}J(\theta)=\frac{1}{m} \sum_{i=1}^{m}(\sigma(\theta^Tx^{(-1)})-y^{(i)})x_j^{(i)}$$
+> * 决策边界    
+>   模型估算概率的界定点，即模型的决策边界
+> * Softmax回归    
+>   类k的Softmax分数
+>   $$S_k(x)=x^T \theta^{(\theta)}$$
+>   每个类都有自己的特定参数向量 $\theta^{(\theta)}$ 所有这些向量通常都作为行存储在参数矩阵中
+>   Softmax函数    
+>   $$\hat{P_k}=\sigma(S(x)) = \frac{exp(S_k(x))} {\sum_{j=1}^{k} exp(S_j(x))}$$
+>   其中 k 是系数 S(x) 是一个向量，其中包含实例x的每个类的分数 $\sigma(S(x))_k$ 是实例x属于类k的估计概率，给定该实例每个数的分数。
+>   Softmax回归分类预测    
+>   $$\hat{y}=arg_k max \sigma(S(x))_k = arg_k max S_k(x)=arg_k max((\theta^{(k)})^Tx)$$
+>   交叉熵成本函数
+>   $$J(\Theta)=- \frac{1}{m} \sum_{i=1}^{m} \sum_{k=1}^{K} y_k^{(i)} log(\hat{p}_k^{(i)})$$
+> ## 8. 支持向量机
+> SVM 特别适合用于中小型复杂数据集的分类    
+> * 线性SVM分类 
+>   SVM 分类器视为在类之间模拟尽可能的最宽的街道，也叫大间隔分类。
+>   sklearn.svm.LinearSVC
+> * 非线性SVM分类
+>   多项式内核，解决非线性的，增加特征
+>   ```Python
+>   多项式内核
+>   from sklearn.svm import SVC
+>   poly_kernel_svm_clf = Pipeline([
+>     ("scaler",StandardScaler()),
+>     ("svm_clf",SVC(kernel="poly",degree=3,coef0=1,C=5))
+>   ])
+>   poly_kernel_svm_clf.fit(X,y)
+>   ```
+>   高斯RBF内核
+>   ```Python
+>   # 高斯内核 rbf
+>   rbf_kernel_svm_clf = Pipeline([
+>     ("scaler",StandardScaler()),
+>     ("svm_clf",SVC(kernel="rbf",gamma=5,C=0.001))
+>   ])
+>   rbf_kernel_svm_clf.fit(X,y)
+>   ```
+> * SVM回归
+>   ```Python
+>   from sklearn.svm import LinearSVR
+>   svm_reg = LinearSVR(epsilon=1.5)
+>   svm_reg.fit(X,y)
+>   ```
+>   ```Python
+>   from sklearn.svm import SVR
+>   svm_poly_reg = SVR(kernel="poly",degree=2,C=100,epsilon=0.1)
+>   svm_poly_reg.fit(X,y)
+>   ```
+>   SVR类是SVC类的回归等价物，LinearSVR类也是LinearSVC类的回归等价物。SVM也可用于异常值检测
+> * 工作原理(待完善)
+> ## 9. 决策树
+> 决策树不稳定，相同的数据集可能训练出不同的模型，正交的决策边界
+> ## 10. 集成学习和随机森林
+> 集成方法将它们组合成一个更强的预测器
+> * 投票分类器    
+>   已经训练好了一些分类器，每个分类器的准确率约为80%，大概包括一个逻辑回归分类器，一个SVM分类器，一个随机森林分类，一个k-近邻分类器等等。    
+>   标准：聚合多个分类器的预测结果，投票得出分类类别。    
+>   结果：投票法分类器的准确率通常比集成中最好的分类器还要高。    
+>   备注：即使每个分类器都是弱学习器(意味着它仅比随机猜测好一点)，通过集成依然可以实现一个强学习器(高准确率)，只要有足够大数量并且足够多种类的弱学习器即可。    
+>   注意：当预测器尽可能互相独立时，集成方法的效果最优。获得多种分类器的方法之一就是使用不同的算法进行训练。这会增加它们犯不同类型错误的机会，从而提升集成的准确率。
+>   ```Python
+>   from sklearn.datasets import make_moons
+>   X,y = make_moons(n_samples=100,noise=0.15)
+>   split_ = int(len(y) * 0.8) 
+>   X_train,y_train,X_test,y_test = X[:split_],y[:split_],X[split_:],y[split_:]
+>
+>   # 集成学习-投票分类器
+>   # 硬投票
+>   from sklearn.ensemble import RandomForestClassifier
+>   from sklearn.ensemble import VotingClassifier
+>   from sklearn.linear_model import LogisticRegression
+>   from sklearn.svm import SVC
+>   log_clf = LogisticRegression()
+>   rnd_clf = RandomForestClassifier()
+>   svm_clf = SVC()
+>   voting_clf = VotingClassifier(
+>     estimators=[('lr',log_clf),('rf',rnd_clf),('svc',svm_clf)],
+>     voting='hard'
+>   )
+>   voting_clf.fit(X_train,y_train)
+>
+>   from sklearn.metrics import accuracy_score
+>   for clf in (log_clf,rnd_clf,svm_clf,voting_clf):
+>     clf.fit(X_train,y_train)
+>     y_pred  = clf.predict(X_test)
+>     print(clf.__class__.__name__,accuracy_score(y_test,y_pred))
+>
+>
+>   # 软投票
+>   svm_clf = SVC(probability=True)
+>   voting_clf = VotingClassifier(
+>     estimators=[('lr',log_clf),('rf',rnd_clf),('svc',svm_clf)],
+>     voting='soft'
+>   )
+>   voting_clf.fit(X_train,y_train)
+>
+>   for clf in (log_clf,rnd_clf,svm_clf,voting_clf):
+>     clf.fit(X_train,y_train)
+>     y_pred  = clf.predict(X_test)
+>     print(clf.__class__.__name__,accuracy_score(y_test,y_pred))
+>   
+>   ```  
+> * bagging和pasting
+>   bagging: 采样放回样本，自举汇聚法。
+>   pasting：采样样本不放回
+>   ```Python
+>   # sklearn中的bagging和pasting 
+>   from sklearn.ensemble import BaggingClassifier
+>   from sklearn.tree import DecisionTreeClassifier
+>   bag_clf = BaggingClassifier(
+>     DecisionTreeClassifier(),n_estimators=500,
+>     max_samples=80,bootstrap=True,n_jobs=-1,oob_score=True  # oob_score=True 包外评估，平均只对63%的训练实例进行采样，剩余的37%未被采样的训练实例 开启之后，会自动进行交叉验证
+>   )
+>   
+>   bag_clf.fit(X_train,y_train)
+>   y_pred = bag_clf.predict(X_test)
+>   y_pred = bag_clf.predict_proba(X_test)   # 使用该方法，自动执行软投票而不是硬投票
+>   ```
+>   总结: bagging生成的模型通常更好，原因是自举法给每个预测器的训练子集引入了更高的多样性，所以最后bagging比pasting的偏差略高，预测器之间的关联度更低，所以集成的方法降低。
+> * 随机补丁和随机子空间
+>   对处理高维输入(例如图像)特别有用。对训练实例和特征都进行抽样，这称为随机补丁方法。
+>   保留所有训练实例(即bootstrap=False且max_samples=1.0)但是对特征进行抽样(即bootstrap_features=True并且 max_features<1.0) 这称为随机子空间法。
+>   对特征抽样给预测器带来更大的多样性，所以以略高一点的偏差换取了更低的方差。
+> * 随机森林
+>   随机森林是决策树的集成，通常用bagging，训练集大小通过max_samples来设置。除了先构建一个BaggingClassifier然后传入DecisionTreeClassifier，还有一种方法就是使用RandomForestClassifier。
+> * 极端随机树
+>   极端随机树比常规随机森林要快的很多，因为在每个节点上找到每个特征的最佳阈值是决策生长中最耗时的任务之一
+>   备注：通常很难预先知道一个RandomForestClassifier是否会比一个ExtraTreesClassifier更好或更坏。唯一的方法是俩种都尝试一遍，然后使用交叉验证进行比较，还需要使用网格搜索调整超参数。
+> * 
