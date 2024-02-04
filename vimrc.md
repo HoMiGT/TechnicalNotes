@@ -47,12 +47,12 @@ Plugin 'sjl/gundo.vim'
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'suan/vim-instant-markdown'
 Plugin 'lilydjwg/fcitx.vim'
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'rust-lang/rust.vim' " Rust语法高亮、格式化等
-Plug 'prabirshrestha/vim-lsp' " 代码补全、错误检查等
-Plug 'scrooloose/nerdtree' " 文件浏览器
-Plug 'dense-analysis/ale' " 异步语法检查和代码格式化
-Plug 'vim-airline/vim-airline' " 状态栏美化
+Plugin 'neoclide/coc.nvim', {'branch': 'release'}
+Plugin 'rust-lang/rust.vim' " Rust语法高亮、格式化等
+Plugin 'prabirshrestha/vim-lsp' " 代码补全、错误检查等
+Plugin 'scrooloose/nerdtree' " 文件浏览器
+Plugin 'dense-analysis/ale' " 异步语法检查和代码格式化
+Plugin 'vim-airline/vim-airline' " 状态栏美化
 call vundle#end()
 filetype plugin indent on
 syntax on
