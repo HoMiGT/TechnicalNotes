@@ -40,14 +40,13 @@ Plugin 'vim-scripts/DrawIt'
 Plugin 'SirVer/ultisnips'
 Plugin 'Valloric/YouCompleteMe'
 Plugin 'derekwyatt/vim-protodef'
-Plugin 'scrooloose/nerdtree'
 Plugin 'fholgado/minibufexpl.vim'
 Plugin 'gcmt/wildfire.vim'
 Plugin 'sjl/gundo.vim'
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'suan/vim-instant-markdown'
 Plugin 'lilydjwg/fcitx.vim'
-Plugin 'neoclide/coc.nvim', {'branch': 'release'}
+Plugin 'neoclide/coc.nvim', {'branch': 'release'}  " 需要安装node 并且在~/.vim/bundle/coc.nvim 目录下执行 yarn install && yarn build 
 Plugin 'rust-lang/rust.vim' " Rust语法高亮、格式化等
 Plugin 'prabirshrestha/vim-lsp' " 代码补全、错误检查等
 Plugin 'scrooloose/nerdtree' " 文件浏览器
