@@ -34,3 +34,16 @@ Centos7.9默认版本是4.8.5，升级步骤如下
   # gcc --version
 
   # g++ --version
+
+### 6. 8.3版本更新10.2版本
+```shell
+yum install devtoolset-10-gcc devtoolset-10-gcc-c++ && \
+mv /usr/bin/gcc /usr/bin/gcc-8.3 && \
+ln -s /opt/rh/devtoolset-10/root/bin/gcc /usr/bin/gcc && \
+mv /usr/bin/g++ /usr/bin/g++-8.3 && \
+ln -s /opt/rh/devtoolset-10/root/bin/g++ /usr/bin/g++ && \
+mv /usr/bin/c++ /usr/bin/c++-8.3 && \
+ln -s /opt/rh/devtoolset-10/root/bin/c++ /usr/bin/c++ && \
+mv /usr/bin/cc /usr/bin/cc-8.3 && \
+ln -s /opt/rh/devtoolset-10/root/bin/cc /usr/bin/cc
+```
