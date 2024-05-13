@@ -10,5 +10,5 @@
 > 验证cuda安装：nvcc --version
 # 2. 下载安装TensorRT
 > [TensorRT SDK downloads](https://developer.nvidia.com/tensorrt)
-> 解压压缩包: tar 
+> 解压压缩包: tar -xvzf TensorRT-
 > 
