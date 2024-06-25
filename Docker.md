@@ -57,3 +57,15 @@
 > 1. 清理docker系统中不再使用的镜像、缓存、容量和网络等资源，删除未使用的镜像，停止的容器，无效的网络，释放磁盘空间
 > docker system prune -a
 > ```
+> * docker 迁移目录
+> ```Shell
+> # docker info | grep "Docker Root Dir"
+> # systemctl stop docker
+> # systemctl status docker
+> # rsync -avzP /var/lib/docker /home/docker_workspace/
+> # mv /var/lib/docker /var/lib/docker.bak
+> # ln -s /home/docker_workspace/docker /var/lib/docker
+> # systemctl start docker
+> # systemctl status docker
+> # rm -rf /var/lib/docker.bak
+> ```
