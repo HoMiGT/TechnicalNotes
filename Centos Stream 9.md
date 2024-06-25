@@ -1,6 +1,7 @@
 # 安装Cuda 
 > ## 安装步骤
->> [cuda guide install](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)     
+>> [cuda guide install](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
+>> [download latest cuda](https://developer.nvidia.com/cuda-downloads)     
 >> ``` Shell
 >> 1. 查看是否有nvidia驱动
 >> # lspci | grep -i nvidia
@@ -36,8 +37,6 @@
 >> # systemctl set-default graphical.target
 >> # reboot 
 >> ```
->> [download latest cuda](https://developer.nvidia.com/cuda-downloads)
->>
 > ## 卸载步骤
 >> ```Shell
 >> 1. cuda 的卸载  X.Y 为cuda版本
@@ -45,3 +44,30 @@
 >> 2. nvidia 的卸载
 >> # /usr/bin/nvidia-uninstall
 >> ```
+******
+# 磁盘分区
+> * 扩充root分区大小
+> ```Shell
+> 1. 查看磁盘空间大小
+> # df -h
+> 2. 备份home目录文件
+> # cp -r /home/ homebak/
+> 3. 卸载home分区
+> # umount /home && df -h
+> 4. 删除home所在lv
+> # lvremove /dev/mapper/cs-home
+> 5. 扩展root所在lv
+> # lvextend -L +200G /dev/mapper/cs-root
+> # df -h
+> 6. 拓展文件系统，并查看分区是否扩展成功
+> # xfs_growfs /dev/mapper/cs-root && df -h
+> 7. 重新创建home的lv
+> # lvcreate -L 667G -n home cs
+> # df -h
+> # vgdisplay
+> 8. 创建home文件系统
+> # mkfs.xfs /dev/mapper/cs-home
+> 9. 挂载home分区
+> # mount /dev/mapper/cs-home /home
+> # df -h 
+> ```
