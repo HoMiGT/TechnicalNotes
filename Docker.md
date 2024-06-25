@@ -69,3 +69,18 @@
 > # systemctl status docker
 > # rm -rf /var/lib/docker.bak
 > ```
+> * docker 配置国内镜像
+> ```Shell
+> vim /etc/docker/daemon.json
+> `
+> {
+>     "registry-mirrors": [
+>         "https://registry.docker-cn.com",
+>         "https://docker.mirrors.ustc.edu.cn",
+>         "https://hub-mirrors.c.163.com",
+>         "https://mirror.baidubce.com",
+>         "https://ccr.ccs.tencentyun.com"
+>     ]
+> }
+> `
+> ```
