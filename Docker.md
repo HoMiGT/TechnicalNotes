@@ -40,9 +40,8 @@
 > # docker-compose --version
 > 删除docker-compose 
 > # rm -r /usr/local/bin/docker-compose
-> ```
-> * docker-compose 命令
-> ```Shell
+> 
+> docker-compose 命令
 > 查看帮助
 > $ docker-compose -h
 > 启动所有docker-compose服务
@@ -52,4 +51,9 @@
 > 停止并删除容器、网络、卷、镜像  
 > $ docker-compose down
 > ....... 待完善
+> ```
+> * docker 清理磁盘
+> ```Shell
+> 1. 清理docker系统中不再使用的镜像、缓存、容量和网络等资源，删除未使用的镜像，停止的容器，无效的网络，释放磁盘空间
+> docker system prune -a
 > ```
