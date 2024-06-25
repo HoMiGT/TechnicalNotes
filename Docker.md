@@ -71,7 +71,7 @@
 > ```
 > * docker 配置国内镜像
 > ```Shell
-> vim /etc/docker/daemon.json
+> # vim /etc/docker/daemon.json
 > `
 > {
 >     "registry-mirrors": [
@@ -83,4 +83,7 @@
 >     ]
 > }
 > `
+> # systemctl daemon-reload
+> # systemctl restart docker
+> # docker info
 > ```
