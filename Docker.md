@@ -14,11 +14,16 @@
 ## 容器
 > * 导出
 > ```Shell
-> sudo docker export [contianer-id | contianer-name] | gzip > <name>.tar.gz
-> sudo docker export [contianer-id | contianer-name] > <name>.tar
-> sudo docker export -o <name>.tar [contianer-id | contianer-name] 
+> sudo docker export [container-id | container-name] | gzip > <name>.tar.gz
+> sudo docker export [container-id | container-name] > <name>.tar
+> sudo docker export -o <name>.tar [container-id | container-name] 
 > ```
 > * 导入
 > ```Shell
 > sudo docker import <name>.tar <new-name>:<tag>
+> ```
+# Docker container2image
+> * 提交
+> ```Shell
+> sudo docker commit [container-id | container-name] <image-name>:<tag>
 > ```
