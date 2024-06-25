@@ -27,3 +27,29 @@
 > ```Shell
 > sudo docker commit [container-id | container-name] <image-name>:<tag>
 > ```
+# Docker 管理
+> * 直接使用docker命令管理
+> ```Shell
+> docker run --rm -it --gpu all -u admin -v /home/admin/projects/alsm:/home/admin/projects/alsm -p 8000-9000:8000-9000 [image-id | image-name] /bin/bash
+> ```
+> * 使用docker-compose管理 [docker-compose release](https://github.com/docker/compose/releases)
+> ```Shell
+> # curl -L "https://github.com/docker/compose/releases/download/v2.27.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+> # chmod +x /usr/local/bin/docker-compose
+> # ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+> # docker-compose --version
+> 删除docker-compose 
+> # rm -r /usr/local/bin/docker-compose
+> ```
+> * docker-compose 命令
+> ```Shell
+> 查看帮助
+> $ docker-compose -h
+> 启动所有docker-compose服务
+> $ docker-compose up
+> 启动所有docker-compose服务 后台运行
+> $ docker-compose up -d
+> 停止并删除容器、网络、卷、镜像  
+> $ docker-compose down
+> ....... 待完善
+> ```
