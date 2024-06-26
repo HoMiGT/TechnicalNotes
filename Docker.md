@@ -87,3 +87,8 @@
 > # systemctl restart docker
 > # docker info
 > ```
+> * docker 使用gpu资源  系统是centos stream 9 
+> ```Shell
+> # curl https://nvidia.github.io/nvidia-docker/rhel9.0/nvidia-docker.repo > /etc/yum.repos.d/nvidia-docker.repo
+> # dnf -y install nvidia-container-toolkit
+> ```
