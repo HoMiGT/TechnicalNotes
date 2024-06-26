@@ -71,3 +71,13 @@
 > # mount /dev/mapper/cs-home /home
 > # df -h 
 > ```
+# ssh 
+> * 配置ssh的超时时间
+> ```Shell
+> # vim /etc/ssh/sshd_config
+> `
+> TCPKeepAlive yes
+> ClientAliveInterval 120
+> ClientAliveCountMax 30
+> `
+> ```
