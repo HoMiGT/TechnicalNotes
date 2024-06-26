@@ -30,7 +30,7 @@
 # Docker 管理
 > * 直接使用docker命令管理
 > ```Shell
-> docker run --rm -it --gpu all -u admin -v /home/admin/projects/alsm:/home/admin/projects/alsm -p 8000-9000:8000-9000 [image-id | image-name] /bin/bash
+> docker run --rm -it --gpu all -u admin -v /home/admin/projects/alsm:/home/admin/projects/alsm -w /home/admin/projects/alsm -p 8000-9000:8000-9000 [image-id | image-name] /bin/bash
 > ```
 > * 使用docker-compose管理 [docker-compose release](https://github.com/docker/compose/releases)
 > ```Shell
