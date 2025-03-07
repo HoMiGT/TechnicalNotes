@@ -61,3 +61,74 @@ ___
 > file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib)  # 创建库路径
 > file(COPY ${THIRD_PARTY_LIB_PATH} DESTINATION ${CMAKE_BINARY_DIR}/lib)  # copy库到指定lib目录下
 > ```
+
+# 8. 例子
+## 8.1 简单自定义库以及引用库
+> ```CMakeLists.txt
+> cmake_minimum_required(VERSION 3.25)
+> project(Calculator LANGUAGES CXX VERSION 1.0)
+>
+> add_library(calclib STATIC src/calclib.cpp include/calc/lib.hpp)
+> target_include_directories(calclib PUBLIC include)
+> target_compile_features(calclib PUBLIC cxx_std_11)
+>
+> add_executable(calc apps/calc/calc.cpp)
+> target_link_libraries(calc PUBLIC calclib)
+> ```
+## 8.2 变量与缓存
+> * 本地变量
+> ```
+> set(MY_VARIABLE "value")
+> set(MY_LIST "one" "two")
+> set(MY_LIST "one;two")
+> ```
+> 注意： 如果一个值没有空格，那么加和不加引号的效果一样。
+> 当一个变量用${}引用，空格的解析规则和上述相同。而对于路径来说，路径很有可能会包含空格，因此 "${MY_PATH}" 更合适
+> * 缓存变量
+> ```
+> # 如果一个变量未被定义，可如此声明
+> set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "Description") 
+>
+> # 可把变量作为一个临时的全局变量 
+> set(MY_CACHE_VARIABLE "VALUE" CACHE STRING "" FORCE)  # 强制修改该变量的值
+> mark_as_advanced(MY_CACHE_VARIABLE)  # cmake -L ..
+>
+> # 可实现同样效果的临时全局变量
+> set(MY_CACHE_VARIABLE "VALUE" CACHE INTERNAL "")
+> option(MY_OPTION "This is settable from the command line" OFF)
+> 
+> set_property(TARGET TargetName PROPERTY CXX_STANDARD 11)  # 一次设置一个属性
+> set_target_properties(TargetName PROPERTIES CXX_STANDARD 11)  # 一次设置多个属性
+>
+> # 另一方式更加通用，可以一次性设置多个目标、
+> get_property(ResultVariable TARGET TargetName PROPERTY CXX_STANDARD)
+> ```
+## 8.3 用CMake进行编程
+> * 控制流程
+> ```
+> if (variable)
+>   # If variable is `ON` `YES` `TRUE` `Y` or non zero number
+> else()
+>   # If variable is `0` `OFF` `NO` `FALSE` `N` `IGNORE` `NOTFOUND` `""`, or ends in `-NOTFOUND`
+> endif()
+> ```
+> * 宏定义与函数
+> ```
+> function(SIMPLE REQUIRED_ARG)
+>   message(STATUS "Simple arguments: ${REQUIRED_ARG}, followed by ${ARGN}")
+>   set(${REQUIRED_ARG} "From SIMPLE" PARENT_SCOPE)
+> endfunction()
+> simple(This Foo Bar)
+> message("Output: ${This}")
+> 
+> function(COMPLEX)
+>   cmake_parse_arguments(
+>     COMPLEX_PREFIX
+>     "SINGLE;ANOTHER"
+>     "ONE_VALUE;ALSO_ONE_VALUE"
+>     "MULTI_VALUES"
+>     ${ARGN}
+>   )
+> endfunction()
+> ```
+> 
