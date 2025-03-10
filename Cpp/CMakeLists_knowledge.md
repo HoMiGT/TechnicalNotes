@@ -222,6 +222,7 @@ ___
 > endif()
 > ```
 ## 9.1 全局设置以及属性设置
+> * 设置c++的编译版本
 > ```
 > set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ standard to use")  # 全局设置c++版本
 > set(CMAKE_CXX_STANDARD_REQUIRED ON)  # 关闭cmake的回退功能，强制使用指定的c++版本
@@ -232,4 +233,94 @@ ___
 >                       CXX_STANDARD 11
 >                       CXX_STANDARD_REQUIRED YES
 >                       CXX_EXTENSIONS NO)
+> ```
+> * 地址无关代码 -fPIC
+> ```
+> set(CMAKE_POSITION_INDENPENDENT_CODE ON)  # SHARED 以及 MODULE 类型的库中会自动包含此标志，也可以显示声明 全局
+> set_target_properties(lib1 PROPERTIES POSITION_INDENPENDENT_CODE ON)  # 对某个目标进行设置
+> ```
+> * Little libraries 在Linux -ldl 标志
+> ```
+> find_library(MATH_LIBRARY m)
+> if(MATH_LIBRARY)
+>   target_link_libraries(MyTarget PUBLIC ${MATH_LIBRARY})
+> endif()
+> ```
+> * 程序间优化(Interprocedural optimization) -flto 
+> ```
+> include(CheckIPOSupported)
+> check_ipo_supported(RESULT result)  # 检查是否支持
+> if(result)
+>   set_target_properties(foo PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)  # 支持则启动链接时间优化
+> endif()
+> ```
+> * 一些实用工具
+> ```
+> find_program(CCACHE_PROGRAM ccache)
+> if(CCACHE_PROGRAM)
+>   set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")  # 封装目标编译
+>   set(CMAKE_CUDA_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+> endif()
+>
+> find_program(CLANG_TIDY_EXE NAMES "clang-tidy" DOC "Path to clang-tidy executable")
+> 
+> ```
+> * CMake中一些有用的模组
+> ```
+> # CMakeDependentOption
+> include(CMakeDependentOption)
+> cmake_dependent_option(BUILD_TESTS "Build your tests" ON "VAL1;VAL2" OFF)
+> # 如上的代码是如下代码的缩写 
+> if(VAL1 AND VAL2)
+>   set(BUILD_TESTS_DEFAULT ON)
+> else()
+>   set(BUILD_TESTS_DEFAULT OFF)
+> endif()
+> option(BUILD_TESTS "Build your tests" ${BUILD_TESTS_DEFAULT})
+> if(NOT BUILD_TESTS_DEFAULT)
+>   mark_as_advanced(BUILD_TESTS)
+> endif()
+>
+> # cmake_print_properties 轻松打印属性
+> # cmake_print_variables  打印任意给定的变量的名称和值
+>
+> # CheckCXXCompilerFlag
+> include(CheckCXXCompilerFlag)
+> check_cxx_compiler_flag(-someflag OUTPUT_VARIABLE) # OUTPUT_VARIABLE 也会出现在打印的配置输出中
+> # 还有 CheckIncludeFileCXX、CheckStructHasMember、TestBigEndian、CheckTypeSize
+>
+> # try_compile / try_run
+> try_compile(RESULT_VAR bindir SOURCES source.cpp)  # 如果使用try_run，则将运行生成的程序的结果存储在 RUN_OUTPUT_VARIABLE 中
+>
+> # FeatureSummary
+> include(FeatureSummary)  # 打印出找到的所有软件包以及你明确设定的所有选项
+> set_package_properties(OpenMP PROPERTIES URL "http://www.openmp.org" DESCRIPTION "Parallel compiler directives" PURPOSE "This is what it does in my package") # 拓展包的默认信息
+> add_feature_info(WITH_OPENMP OpenMP_CXX_FOUND "OpenMP (Thread safe FCNs only)")  # 添加任何选项使其成为 feature_summary 的一部分
+> 
+> if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+>   feature_summary(WHAT ENABLED_FEATURES DISABLED_FEATURES PACKAGES_FOUND)
+>   feature_summary(FILENAME ${CMAKE_CURRENT_BINARY_DIR}/features.log WHAT ALL)
+> endif()
+> ```
+> * CMake对IDE的支持
+> ```
+> # 用文件夹来组织目标(target)
+> set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+> set_property(TARGET MyFile PROPERTY FOLDER "Scripts")  # 创建目标之后，为目标添加文件属性，将其目标MyFile归入到Scripts文件夹中，文件夹可以使用 / 进行嵌套
+>
+> # 用文件夹来组织文件
+> source_group("Source Files\\New Directory" REGULAR_EXPRESSION ".*\\.c[ucp]p?")  # 传统方式
+> source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/base/dir" PREFIX "Header Files" FILES ${FILE_LIST})  # ? 待理解
+> ```
+> * 调试代码
+> ```
+> message(STATUS "MY_VARIABLE=${MY_VARIABLE}")
+> # 通过内建模组 更方便打印
+> include(CMakePrintHelpers)
+> cmake_print_variables(MY_VARIABLE)  # 打印一个变量
+>
+> cmake_print_properties(TARGETS my_target PROPERTIES POSITION_INDEPENDENT_CODE)  # 打印关于某些目标拥有的变量
+>
+> # 如果想知道构建项目cmake文件发生了什么
+> cmake -S . -B build --trace-source=CMakeLists.txt --trace-expand   # 会打印出指定的文件运行在哪一行，且变量会直接展开它们的值
 > ```
