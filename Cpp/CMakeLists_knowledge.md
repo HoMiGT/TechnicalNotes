@@ -131,4 +131,105 @@ ___
 >   )
 > endfunction()
 > ```
+## 8.4 与代码进行交互
+> * 通过CMake配置文件
+> ```
+> # Version.h.in
+> #define MY_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+> #define MY_VERSION_MINOR @PROJECT_VERSION_MINOR@
+> #define MY_VERSION_PATCH @PROJECT_VERSION_PATCH@
+> #define MY_VERSION_TWEAK @PROJECT_VERSION_TWEAK@
+> #define MY_VERSION "@PROJECT_VERSION@"
 > 
+> configure_file(
+>   "${PROJECT_SOURCE_DIR}/include/My/Version.h.in"
+>   "${PROJECT_BINARY_DIR}/include/My/Version.h"
+> )
+> ```
+> * 读入文件
+> ```
+> set(VERSION_REGEX "#define MY_VERSION[ \t]+\"(.+)\"")
+> # 选择文件中与正则表达式相匹配的行
+> file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/include/My/Version.hpp" VERSION_STRING REGEX ${VERSION_REGEX})
+> string(REGEX REPLACE ${VERSION_REGEX} "\\1" VERSION_STRING "${VERSION_STRING}")
+> project(My LANGUAGES CXX VERSION ${VERSION_STRING})
+> ```
+## 8.5 如何组织你的项目
+> 首先，创建一个名为project项目，它有一个名为lib的库，有一个名为app的执行文件
+> ```
+> - project
+>   - .gitignore
+>   - README.md
+>   - LICENCE.md
+>   - CMakeLists.txt
+>   - cmake
+>     - FindSomeLib.cmake
+>     - somethind_else.cmake
+>   - include
+>     - project
+>       - lib.hpp
+>   - src
+>     - CMakeLists.txt
+>     - app.cpp
+>   - tests
+>     - CMakeLists.txt
+>     - testlib.cpp
+>   - docs
+>     - CMakeLists.txt
+>   - extern
+>     - googletest
+>   - scripts
+>     - helper.py
+> ```
+## 8.6 在CMake中运行其他程序
+> * 在配置时运行一条命令
+> ```
+> find_package(Git QUIET)
+>
+> if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+>   execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+>                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+>                   RESULT_VARIABLE GIT_SUBMOD_RESULT)
+>   if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+>     message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT},please checkout submodules")
+>   endif()
+> endif()
+> ```
+> * 在构建时运行一条命令
+> ```
+> find_package(PythonInterp REQUIRED)    # 找到python解释器
+> # 添加自定义命令
+> # 输出Generated.hpp 命令是通过python脚本，参数是依赖some_target
+> add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp"
+>   COMMAND "${PYTHON EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/scripts/GenerateHeader.py" --argument DEPENDS some_target)
+> # 添加自定义目标 显示构建该目标
+> add_custom_target(generate_header ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp")
+> install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/Generated.hpp DESTINATION include)
+> ```
+> * CMake中常用的工具
+> ```
+> cmake -E <mode>  在CMakeLists.txt中常被写作 ${CMAKE_COMMAND} -E
+> <mode> : copy(复制) make_directory(创建文件夹) remove(移除) create_symlink(基于Unix系统可用)
+> ```
+# 9 为CMake项目添加特性
+> 默认的构建类型
+> ```
+> set(default_build_type "Release")
+> if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+>   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+>   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+>   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+> endif()
+> ```
+## 9.1 全局设置以及属性设置
+> ```
+> set(CMAKE_CXX_STANDARD 11 CACHE STRING "The C++ standard to use")  # 全局设置c++版本
+> set(CMAKE_CXX_STANDARD_REQUIRED ON)  # 关闭cmake的回退功能，强制使用指定的c++版本
+> set(CMAKE_CXX_EXTENSIONS OFF)  # 使用 -std=c++11 而不是 -std=gnu++11
+>
+> # 不想设置全局行为，也可以为每个目标设置属性以实现相同的效果
+> set_target_properties(myTarget PROPERTIES
+>                       CXX_STANDARD 11
+>                       CXX_STANDARD_REQUIRED YES
+>                       CXX_EXTENSIONS NO)
+> ```
