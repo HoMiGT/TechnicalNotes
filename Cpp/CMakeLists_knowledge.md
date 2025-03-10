@@ -211,6 +211,10 @@ ___
 > cmake -E <mode>  在CMakeLists.txt中常被写作 ${CMAKE_COMMAND} -E
 > <mode> : copy(复制) make_directory(创建文件夹) remove(移除) create_symlink(基于Unix系统可用)
 > ```
+> * file 遍历目录下的指定文件
+> ```
+> file(GLOB MY_IXX_FILES "${MODULE_DIR}/*.ixx")
+> ```
 # 9 为CMake项目添加特性
 > 默认的构建类型
 > ```
