@@ -324,3 +324,149 @@ ___
 > # 如果想知道构建项目cmake文件发生了什么
 > cmake -S . -B build --trace-source=CMakeLists.txt --trace-expand   # 会打印出指定的文件运行在哪一行，且变量会直接展开它们的值
 > ```
+# 10. 包含子项目
+## 10.1 子模组
+> ```
+> # 如果添加一个Git仓库，它与你的项目仓库使用相同的Git托管服务
+> # git submodule add ../owner/repo.git extern/repo   # 使用相对于项目的相对路径
+>
+> # CMake的解决方案
+> find_package(Git QUIET)
+> if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+>   option(GIT_SUBMODULE "Check submodules during build" ON)
+>   if(GIT_SUBMODULE)
+>     message(STATUS "Submodule update")
+>     execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} RESULT_VARIABLE GIT_SUBMOD_RESULT)
+>     if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+>       message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+>     endif()
+>   endif()
+> endif()
+> if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/repo/CMakeLists.txt")
+>   message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed.Please update submodules and try again.")
+> endif()
+>
+> # 添加子项目
+> add_subdirectory(extern/repo)
+> ```
+# 11. 导出与安装
+> * 查找模块(不好的方式)
+> ```Find<mypackage>.cmake 脚本是为了那些不支持CMake的库所设计。使用CMake的库，可以使用Config<mypackage>.cmake```
+> * 添加子项目
+> ```add_subdirectory 添加相应的子目录，适用于纯头文件和快速编译的库。```
+> * 导出
+> ```*Config.cmake```
+## 11.1 安装
+> 安装命令会将文件或目标"安装"到安装树中。
+> ```
+> install(TARGETS MyLib
+>   EXPORT MyLibTargets
+>   LIBRARY DESTINATION lib
+>   ARCHIVE DESTINATION lib
+>   RUNTIME DESTINATION bin
+>   INCLUDES DESTINATION include
+> )
+> ```
+> 给定CMake可访问的版本是个不错的方式。使用find_package时，可以这样指定版本信息
+> ```
+> include(CMakePackageConfigHelpers)
+> write_basic_package_version_file(
+>   MyLibConfigVersion.cmake
+>   VERSION ${PACKAGE_VERSION}
+>   COMPATIBILITY AnyNewerVersion
+> )
+> ```
+> 接下来有俩个选择，创建MyLibConfig.cmake,可以直接将目标导入或手动写入，然后包含目标文件。若有依赖项如OpenMP,则需要添加相应的选项。
+> 首先，创建一个安装目标文件(类似于在构建目录中创建文件)
+> ```
+> install(EXPORT MyLibTargets FILE MyLibTargets.cmake NAMESPACE MyLib:: DESTINATION lib/cmake/MyLib)
+> ```
+> 该文件将获取导出目标，并将其放入文件中。若没有依赖，只需要使用MyLibConfig.cmake代替MyLibTargets.cmake即可。
+## 11.2 导出
+> ```
+> export(TARGETS MyLib1 MyLib2 NAMESPACE MyLib:: FILE MyLibTargets.cmake)  # CMakeLists.txt 文件的末尾，CMake可以在$HOME/.cmake/packages目录下找到导出的包
+> 
+> set(CMAKE_EXPORT_PACKAGE_REGISIRY ON) 
+> export(PACKAGE MyLib)  # find_package(MyLib)就可以找到构建文件夹了。此方式有缺点：导入了依赖项，则需要再find_package之前导入它们。
+> 
+> ```
+## 11.3 打包
+> ```
+> set(CPACK_PACKAGE_VENDOR "Vendor name")
+> set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Some summary")
+> set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+> set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+> set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+> set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENCE")
+> set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+> ```
+> ```
+> include(CPack)
+> ```
+# 12. 查找库(或包)
+## 12.1 CUDA
+> 启动cuda语言
+> ```
+> project(MY_PROJECT LANGUAGES CUDA CXX)
+>
+> enable_language(CUDA)  # 支持可选的话，可以放在条件语句中
+>
+> include(CheckLanguage)
+> check_language(CUDA)  # 检查cuda是可用
+>
+> CMAKE_CUDA_COMPILER # 通过检查该值，来看cuda开发包是否存在
+> CMAKE_CUDA_COMPILER_ID  # 对于nvcc
+> CMAKE_CUDA_COMPILER_VERSION  # 来检查cuda版本
+> ```
+> 设置cuda变量
+> ```
+> if(NOT DEFINED CMAKE_CUDA_STANDARD)
+>   set(CMAKE_CUDA_STANDARD 11)
+>   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+> endif()
+> ```
+> 添加库/可执行文件
+> ```
+> set_target_properties(mylib PROPERTIES CUDA_SEPARABLE_COMPILATION ON)  # 也可使用 CUDA_PTX_COMPILATION 属性创建一个 PTX（Parallel Thread eXecution）文件
+> ```
+> 内置变量
+> ```
+> CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES：指示cuda开发包内置Thrust等工具的目录
+> CMAKE_CUDA_COMPILER: nvcc的具体路径
+>
+> set(CUDA_LINK_LIBRARIES_KEYWORD PUBLIC)
+> cuda_select_nvcc_arch_flags(ARCH_FLAGS)  # 用户检查当前硬件的架构标志
+> ```
+## 12.2 OpenMP
+> ```
+> find_package(OpenMP)
+> if(OpenMP_CXX_FOUND)
+>   target_link_libraries(MyTarget PUBLIC OpenMP::OpenMP_CXX)
+> endif()
+> ```
+## 12.3 Boost
+> ```
+> set(Boost_USE_STATIC_LIBS OFF)
+> set(Boost_USE_MULTITHREADED ON)
+> set(Boost_USE_STATIC_RUNTIME OFF)
+> find_package(Boost 1.50 REQUIRED COMPONENTS filesystem)
+> message(STATUS "Boost version: ${Boost_VERSION}")
+> if(NOT TARGET Boost::filesystem)
+>   add_library(Boost::filesystem IMPORTED INTERFACE)
+>   set_property(TARGET Boost::filesystem PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+>   set_property(TARGET Boost::filesystem PROPERTY INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES})
+> endif()
+> target_link_libraries(MyExeOrLibrary PUBLIC Boost::filesystem)
+> ```
+## 12.4 MPI
+> ```
+> find_package(MPI REQUIRED)
+> message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
+> target_link_libraries(MyTarget PUBLIC MPI::MPI_CXX)
+> ```
+## 12.5 ROOT 高能物理学的C++工具包
+> ```
+> find_package(ROOT 6.16 CONFIG REQUIRED)
+> add_executable(RootSimpleExample SimpleExample.cxx)
+> target_link_libraries(RootSimpleExample PUBLIC ROOT::Physics)
+> ```
