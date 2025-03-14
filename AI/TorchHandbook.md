@@ -46,3 +46,45 @@
 >     optimizer.step()  # Update parameters
 >     return output.item()
 > ```
+> 这个函数是**训练模型**的关键步骤,包含了**前向传播**、**损失计算**、**反向传播**和**参数更新**：
+> * model.train(): 将模型设置为训练模式。
+> * x.requires_grad_(False)与y.requires_grad_(False)：显示声明两个张量不需要计算梯度。输入数据和标签通常不需要梯度，只需要进行前向传播计算。
+> * optimizer.zero_grad(): 清空之前的梯度，防止累积(PyTorch默认是累积梯度)。
+> * model.forward(x.view(len(x),1)): 进行前向传播。x.view(len(x),1)将输入x重塑成一个形状为(len(x),1)的张量。通过model.forward()得到模型的输出。
+> * loss.forward(fx,y): 计算预测结果fx和真实标签y之间的损失，这里使用的是**均方误差损失(MES Loss)**。
+> * output.backward(): 进行反向传播，计算每个参数的梯度。
+> * optimizer.step(): 根据计算出的梯度更新模型的参数(这里使用的是**SGD优化器**)。
+> * output.item(): 返回值的事损失值，表示训练过程中的误差大小。
+> 4. 主函数
+> ```Python
+> def main():
+>     torch.manual_seed(42)
+>     X = torch.linspace(-1, 1, 101)
+>     Y = 2 * X + torch.randn(X.size()) * 0.33
+>     model = build_model()
+>     loss = torch.nn.MSELoss(reduction='elementwise_mean')
+>     optimizer = optim.SGD(model.parameters(),lr=0.01,momentum=0.9)
+>     batch_size = 10
+>     for i in range(100):
+>         cost = 0.
+>         num_batchs = len(X) // batch_size
+>         for k in range(num_batches):
+>             start, end = k * batch_size, (k+1) * batch_size
+>             cost += train(model, loss, optimizer, X[start:end], Y[start:end])
+>         print("Epoch= %d, cost = %s",i+1, cost/ num_batches)
+>     w = next(model.parameters()).data
+>     print("w = %.2f" % w.numpy())
+> ```
+> * torch.manual_seed(42): 设置随机种子，确保每次运行时结果相同，便于调试
+> * X = torch.linspace(-1, 1, 101): 生成一个从-1到1之间均匀分布的101个点
+> * Y = 2 * X + torch.randn(X.size()) * 0.33: 生成目标值Y，它是X的线性变换，添加了高斯噪声(标准差为0.33)。 相当于想学习的线性回归模型的目标输出。
+> * model = build_model(): 构建线性回归模型。
+> * loss = torch.nn.MSELoss(reduction='elementwise_mean'): 选择损失函数，这里是**均方误差(MSE)**。reduction='elementwise_mean'表示计算所有样本的平均损失。
+> * optimizer = optim.SGD(model.parameters(),lr=0.01,momentum=0.9): 选择优化器，这里使用**随机梯度下降(SGD)**，学习率为0.01，动量为0.9。
+> * batch_size = 10: 定义每批次训练的样本数。
+> * for i in range(100): 进行100次训练(即100个Epoch)。
+> * num_batches = len(x) // batch_size: 计算每个Epoch需要的批次数量。
+> * for k in range(num_batches): 按批次训练模型。每次使用X[start:end]和Y[start:end]进行训练，并累加损失。
+> * print("Epoch= %d, cost = %s",i+1, cost/ num_batches): 打印每个Epoch的平均损失。
+> * w = next(model.parameters()).data: 获取模型的第一个(也是唯一一个)参数w(模型的权重)。
+> * print("w = %.2f" % w.numpy()): 打印最终学到的权重值。
