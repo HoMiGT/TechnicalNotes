@@ -307,7 +307,7 @@
 >         pred_Y = predict(model, te_X)
 >         print(f"Epoch {i+1}, cost= {cost/num_batches}, acc={100. * np.mean(pred_Y == te_Y)}")
 > ```
-## 5. 现在深度学习
+## 5. 深度学习
 ### 5.1 导入必要的库
 > ```
 > import numpy as np
@@ -333,7 +333,25 @@
 >   * ReLU激活：ReLU()非线性函数，增加模型的表达能力。解决Sigmoid **梯度消失** 问题，训练更稳定、收敛更快
 >   * Dropout(0.2): 防止过拟合，每次训练随机丢弃20%的神经元
 >   * 第二层：Linear(512,512) -> ReLU() -> Dropout(0.2) 继续进行特征提取
->   * 第三层: Linear(512,10), 输出10维 表示0~9 
+>   * 第三层: Linear(512,10), 输出10维 表示0~9
+> 代码可以进一步优化
+> ```
+> model = torch.nn.Sequential(
+>     torch.nn.Conv2d(1,32,kernel_size=3,stride=1,padding=1),  # CNN 提取特征
+>     torch.nn.ReLU(),
+>     torch.nn.MaxPool2d(kernel_size=2,stride=2),
+>     torch.nn.Conv2d(32,64,kernel_size=3,stride=1,padding=1),
+>     torch.nn.ReLU(),
+>     torch.nn.MaxPool2d(kernel_size=2,stride=2),
+>     torch.nn.Flatten(),  # 拉平成 1D
+>     torch.nn.Linear(64*7*7,512),
+>     torch.nn.ReLU(),
+>     torch.nn.Dropout(0.2),  # 防止过拟合
+>     torch.nn.Linear(512, 10)   # 最终分类
+> )
+> ```
+> 这样比Linear(784,512)更高效！
+> 
 ### 5.3 训练模型
 > ```
 > def train(model,loss,optimizer,x_val,y_val):
@@ -378,6 +396,210 @@
 >             pred_Y = predict(model, te_X)
 >         print(f"Epoch: {i+1}, cost = {cost / num_batches}, acc = {100. * np.mean(pred_Y == te_Y)}")
 > ```
+## 6. 卷积神经网络
+### 6.1 导入库
+> ```
+> import numpy as np
+> import torch
+> from torch import optim
+> from data_util import load_mnist
+> ```
+### 6.2 定义CNN模型
+> ```
+> class ConvNet(torch.nn.Module):
+>     def __init__(self, output_dim):
+>         super(ConvNet, self).__init__()
+>
+>         self.conv = torch.nn.Sequential()
+>         self.conv.add_module("conv_1",torch.nn.Conv2d(1,10,kernel_size=5))  # 第一层卷积 输入1通道，输出10个通道(相当于10个卷积核)
+>         self.conv.add_module("maxpool_1",torch.nn.MaxPool2d(kernel_size=2))  # 池化，减低特征图的大小(从28x28)降低到14x14
+>         self.conv.add_module("relu_1",torch.nn.ReLU())  # 激活函数
+>         self.conv.add_module("conv_2",torch.nn.Conv2d(10,20,kernel_size=5))  # 第二层卷积 10个输入通道，20个输出通道
+>         self.conv.add_module("dropout_2",torch.nn.Dropout())  # 随机丢弃神经元，防止过拟合
+>         self.conv.add_module("maxpool_2",torch.nn.MaxPool2d(kernel_size=2))  # 再次池化 14x14 变成 7x7
+>         self.conv.add_module("relu_2",torch.nn.ReLU())  # 激活函数
+>
+>         self.fc = torch.nn.Sequential()  # 全连接层(FC层)
+>         self.fc.add_module("fc1",torch.nn.Linear(320,50))  # 输入320 个神经元，输出50个神经元  
+>         self.fc.add_module("relu_3",torch.nn.ReLU())  # ReLU激活
+>         self.fc.add_module("dropout_3",torch.nn.Dropout())  # 随机丢弃神经元
+>         self.fc.add_module("fc2",torch.nn.Linear(50,output_dim))  # 最终输出10个类别(对应0-9)
+>
+>     def forward(self, x):
+>         x = self.conv.forward(x)
+>         x = x.view(-1, 320)
+>         return self.fc.forward(x)
+> ```
+> * 运行forward的数据变化       
+> 
+> |层|输入形状|说明|
+> |:--|:--|:--|
+> |输入图片|[batch,1,28,28]|MNIST图片|
+> |conv_1|[batch,10,24,24]|28-5+1=24|
+> |maxpool_1|[batch,10,12,12]|池化12x12|
+> |conv_2|[batch,20,8,8]|12-5+1=8|
+> |maxpool_2|[batch,20,4,4]|池化4x4|
+> |flatten|[batch,320]|展平成向量|
+> |fc1|[batch,50]| |
+> |fc2|[batch,10]|10个分类结果|
+> 
+> * 数据变化的关键规则
+>   1. 输入和输出形状
+>   * 卷积层(Conv2d)
+>     * 输入：[batch_size, channels, height, width]
+>     * 输出: [batch_size, out_channels, new_height, new_width]
+>     * 计算规则：
+>       * new_height = (height - kernel_size + 2 * padding) / stride + 1
+>       * new_width = (width - kernel_size + 2 * padding) / stride + 1
+>     * 例子：
+>       * Conv2d(1, 10, kernel_size=5,stride=1,padding=0)
+>         * 输入尺寸 [batch_size, 1, 28, 28]
+>         * 输出尺寸 [batch_size, 10, 24, 24]    (28-5+2*0)/1+1=24
+>   * 池化层(MaxPool2d)
+>     * 输入: [batch_size, channels, height, width]
+>     * 输出: [batch_size, channels, new_height, new_width]
+>     * 计算规则：
+>       * new_height = height / kernel_size
+>       * new_width = width / kernel_size
+>     * 例子：
+>       * MaxPool2d(kernel_size=2)
+>         * 输入尺寸 [batch_size, 10, 24, 24]
+>         * 输出尺寸 [batch_size, 10, 12, 12]  (24 / 2 = 12) 
+>   * 全连接层
+>     * 输入：一维向量(通常是从卷积层的输出通过.view(-1)展平得到的)
+>     * 输出: [batch_size, output_dim]
+>     * 例子：
+>       假设在ConvNet中经过卷积核池化后得到 batch_size x 20 x 4 x 4 的输出 (4x4是卷积后的图片大小)，你需要**展平**这个输出，将其转化为 [batch_size, 320] (20*4*4=320),然后才能传入全连接层
+>   2. 数据流动规则
+>   * 输入层与输出层一致性, 确保数据维度一致。
+>   * 展平操作(Flatten)，全连接层的输入通常是一个一维向量，在卷积和池化层后得到的是一个多维数组，你需要用 x.view(-1,flatten_dim)展平数据，以便传入全连接层。
+>   3. 数据流和形状验证
+>   * 卷积层的参数：卷积核大小、步长、填充等
+>   * 池化层的参数：池化窗口的大小、步长等
+>   * 全连接层的输入：是否进行了正常的展平操作
+>  
+> 
 
-
-
+### 6.3 训练模型
+> ```
+> def train(model, loss, optimizer, x_val, y_val):
+>     model.train()  # 设置为训练模式
+>     x = x_val.requires_grad_(False)
+>     y = y_val.requires_grad_(False)
+>     optimizer.zero_grad()  # 清空梯度，防止梯度累积
+>     fx = model.forward(x)  # 计算前向传播
+>     output = loss.forward(fx,y)  # 计算损失，交叉熵损失
+>     output.backward()  # 反向传播
+>     optimizer.step()  # 更新权重
+>     return output.item()
+> ```
+### 6.4 预测模型
+> ```
+> def predict(model, x_val):
+>     model.eval()  # 进入评估模式
+>     x = x_val.requires_grad_(False)
+>     output = model.forward(x)
+>     return output.data.numpy().argmax(axis=1)  # 取最大概率对应的类别
+> ```
+### 6.5 主函数
+> ```
+> def main():
+>     torch.manual_seed(42)  # 设定随机种子
+>     tr_X, te_X, tr_Y, te_Y = load_mnist(onehot=False)  # 加载MNIST数据集
+>     tr_X = tr_X.reshape(-1,1,28,28)  # 调整数据形状
+>     te_X = te_X.reshape(-1,1,28,28)
+>     tr_X = torch.from_numpy(tr_X).float()
+>     te_X = torch.from_numpy(te_X).float()
+>     tr_Y = torch.from_numpy(tr_Y).long()
+>     n_examples = len(tr_X)
+>     n_classes = 10
+>     model = ConvNet(output_dim = n_classes)
+>     loss = torch.nn.CrossEntropyLoss(reduction='elementwise_mean')  # 定义损失函数
+>     optimizer = optim.SGD(model.parameters(),lr=0.01,momentum=0.9)  #使用SGD优化器
+>     batch_size = 100
+>     for i in range(20):  # 训练20轮
+>         cost = 0.
+>         num_batches = n_examples // batch_size
+>         for k in range(num_batches):
+>             start, end = k * batch_size, (k + 1) * batch_size
+>             cost += train(model, loss, optimizer, tr_X[start:end], tr_Y[start:end])
+>         pred_Y = predict(model,te_X)
+>         print(f"Epoch: {i+1}, cost = {cost / num_batches}, acc = {100. * np.mean(pred_Y == te_Y)}")
+> ```
+## 7. LSTM(长短期记忆网络)
+> LSTM 是一种RNN变体，能够处理和记忆较长时间的依赖关系，解决传统RNN在长序列上训练时的梯度消失和梯度爆炸问题。LSTM的核心部分是记忆单元，它能够选择性地记住或忘记信息。
+### 7.1 导入必要库
+> ```
+> import numpy as np
+> import torch
+> from torch import optim,nn
+> from data_util import load_mnist
+> ```
+### 7.2 LSTM 模型
+> ```
+> class LSTM(torch.nn.Module):
+>     def __init__(self, input_dim, hidden_dim, output_dim):
+>         super(LSTM,self).__init__()
+>         self.hidden_dim = hidden_dim
+>         self.lstm = nn.LSTM(input_dim,hidden_dim)  # 定义LSTM层
+>         self.linear = nn.Linear(hidden_dim,output_dim,bias=False)  # 定义线性层(用于输出)
+>
+>     def forward(self,x):
+>         batch_size = x.size()[1]  # 获取批次大小
+>         h0 = torch.zeros([1,batch_size,self.hidden_dim]).requires_grad_(False)  # 初始化h0  初始隐藏状态
+>         c0 = torch.zeros([1,batch_size,self.hidden_dim]).requires_grad_(False)  # 初始化c0  初始记忆状态
+>         fx, _ = self.lstm.forward(x,(h0,c0))  # 通过LSTM层进行前向传播
+>         return self.linear.forward(fx[-1])  # 使用最后的LSTM输出通过全连接层进行分类
+> ```
+### 7.3 训练模型
+> ```
+> def train(model, loss, optimizer,x_val,y_val):
+>     model.train()  # 设置为训练模式
+>     x = x_val.requires_grad_(False)  # 禁用梯度计算，确保不会计算输入数据的梯度
+>     y = y_val.requires_grad_(False)  # 禁用目标数据的梯度计算
+>     optimizer.zero_grad()  # 清零梯度
+>     fx = model.forward(x)  # 前向传播得到输出
+>     output = loss.forward(fx,y)  # 计算损失
+>     output.backward()  # 反向传播计算梯度
+>     optimizer.step()  # 更新模型参数
+>     return output.item()  #返回损失值
+> ```
+### 7.4 预测模型
+> ```
+> def predict(model,x_val):
+>     model.eval()  # 设置为评估模式
+>     x = x_val.requires_grad_(False)  # 禁用梯度计算
+>     output = model.forward(x)  # 前向传播得到输出
+>     return output.data.numpy().argmax(axis=1)  #返回类别索引
+> ```
+### 7.5 主函数
+> ```
+> def main():
+>     torch.manual_seed(42)
+>     tr_X,te_X,tr_Y,te_Y = load_mnist(onehot=False)  # 加载MNIST数据
+>     train_size = len(tr_Y)  # 训练集大小
+>     n_classes = 10  # 类别数  
+>     seq_length = 28  # 序列长度(图像的高度)
+>     input_dim = 28  # 每个时间步的特征数(图像的宽度)
+>     hidden_dim = 128  # LSTM 的隐藏层维度
+>     batch_size = 100  # 批次大小
+>     epochs = 20  # 训练轮数
+>     tr_X = tr_X.reshape(-1, seq_length,input_dim)  # 重塑训练数据的形状
+>     te_X = te_X.reshape(-1,seq_length,input_dim)   # 重塑测试数据的形状
+>     tr_X = np.swapaxes(tr_X, 0, 1)  # 交换维度，符合LSTM输入的格式
+>     te_X = np.swapaxes(te_X, 0, 1)
+>     tr_X = torch.from_numpy(tr_X).float()  # 转换为 PyTorch Tensor
+>     te_X = torch.from_numpy(te_X).float()
+>     tr_Y = torch.from_numpy(tr_Y).long()
+>     model = LSTMNet(input_dim, hidden_dim, n_classes)  # 初始化模型，损失函数和优化器
+>     loss = torch.nn.CrossEntropyLoss(reduction='elementwise_mean')  # 交叉熵损失
+>     optimizer = optim.SGD(model.parameters(),lr=0.01,momentum=0.9)  # SGD 优化器
+>     for i in range(epoches):  # 训练模型
+>         cost = 0.
+>         num_batches = train_size // batch_size
+>         for k in range(num_batches):
+>             start, end = k * batch_size, (k+1)*batch_size
+>             cost += train(model, loss, optimizer, tr_X[:,start:end, :], tr_Y[start:end])
+>         pred_Y = predict(model, te_X)
+>         print(f"Epoch: {i+1}, cost = {cost/num_batches}, acc = {100. * np.mean(pred_Y == te_Y)}")
+> ```
