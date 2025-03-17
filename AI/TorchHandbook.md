@@ -241,5 +241,143 @@
 >   torch.nn.Linear(64,10)  # 输出层
 > )
 > ```
-> 
+## 4. 神经网络
+### 4.1 导入必要的库
+> ```
+> import numpy as np
+> import torch
+> from torch import optim
+> from data_util import load_mnist
+> ```
+### 4.2 构建模型
+> ```
+> def build_model(input_dim, output_dim):
+>     model = torch.nn.Sequential()
+>     model.add_module("linear_1",torch.nn.Linear(input_dim,512,bias=False))
+>     model.add_module("sigmoid_1",torch.nn.Sigmoid())
+>     model.add_module("linear_2",torch.nn.Linear(512,output_dim,bias=False))
+>     return model
+> ```
+> 俩层神经网络,输入input_dim的特征数量(MNIST是28*28=784)，output_dim输出类别数(MNIST有10个数字0-9)
+> 神经网络结构:
+>     * 第一层 线性层，输入是784维(28*28),输出是512维
+>     * 激活函数：Sigmoid(), 给上一层加一个非线性变换，让神经网络能学到更复杂的特征(通常更推荐ReLU)
+>     * 第二层 输出层, 输入512维输入，输出10维(对应0-9的概率分布)
+### 4.3 训练模型
+> ```
+> def train(model,loss,optimizer,x_val,y_val):
+>     model.train()  # 让模型进入训练模式
+>     x = x_val.requires_grad_(False)
+>     y = y_val.requires_grad_(False)
+>     optimizer.zero_grad()  # 每次迭代前清空梯度，防止梯度累加
+>     fx = model.forward(x)   # 前向传播，fx 是模型的预测结果(一个行为[batch_size,10]的张量)
+>     output = loss.forward(fx,y)  # 计算损失，CrossEntroyLoss会计算预测值和真实标签y之间的差距
+>     output.backward()  # 反向传播梯度
+>     optimizer.step()  # 更新参数,让模型的参数朝着降低损失的方向调整
+>     return output.item()  
+> ```
+### 4.4 预测模型
+> ```
+> def predict(model,x_val):
+>     model.eval()  # 设定模型为评估模型 影响BatchNorm、Dropout等
+>     x = x_val.requires_grad_(False) 
+>     output = model.forward(x)  # 计算模型的输出
+>     return output.data.numpy().argmax(axis=1)  # 取最大值作为预测类别
+> ```
+### 4.5 主函数
+> ```
+> def main():
+>     torch.manual_seed(42)  # 设置随机种子，保证结果可复现
+>     tr_X, te_X, tr_Y, te_Y = load_mnist(onehot=False)  # 载入数据
+>     tr_X = torch.from_numpy(tr_X).float()
+>     te_X = torch.from_numpy(te_X).float()
+>     tr_Y = torch.from_numpy(tr_Y).float()
+>     n_examples, n_features = tr_X.size()  # 获取数据形状
+>     n_classes = 10  # MNIST 任务有10个类别
+>     model = build_model(n_features, n_classes)   # 创建模型
+>     loss = torch.nn.CrossEntropyLoss(reduction="elementwise_mean")  # 定义损失函数  
+>     optimizer = optim.SGD(model.parameters(),lr=0.01,momentum=0.9)   # 定义优化器
+>     batch_size = 100   # 批次大小
+>     for i in range(100):  # 训练100轮
+>         cost = 0.
+>         num_batches = n_examples // batch_size
+>         for k in range(num_batches):
+>             start, end = k * batch_size, (k+1) * batch_size
+>             cost += train(model, loss, optimizer, tr_X[start:end], tr_Y[start:end])
+>         pred_Y = predict(model, te_X)
+>         print(f"Epoch {i+1}, cost= {cost/num_batches}, acc={100. * np.mean(pred_Y == te_Y)}")
+> ```
+## 5. 现在深度学习
+### 5.1 导入必要的库
+> ```
+> import numpy as np
+> import torch
+> from torch import optim
+> from data_util import load_mnist
+> ```
+### 5.2 构建模型
+> ```
+> def build_model(input_dim,output_dim):
+>     model = torch.nn.Sequential()
+>     model.add_module("linear_1",torch.nn.Linear(input_dim,512,bias=False))
+>     model.add_module("relu_1",torch.nn.ReLU())
+>     model.add_module("dropout_1",torch.nn.Dropout(0.2))
+>     model.add_module("linear_2",torch.nn.Linear(512,512,bias=False))
+>     model.add_module("relu_2",torch.nn.ReLU())
+>     model.add_module("dropout_2",torch.nn.Dropout(0.2))
+>     model.add_module(linear_3,torch.nn.Linear(512,output_dim,bias=False))
+>     return model
+> ```
+> 模型是一个三层神经网络
+>   * 第一层： 线性变换 Linear(748,512), 输入是784(28x28)
+>   * ReLU激活：ReLU()非线性函数，增加模型的表达能力。解决Sigmoid **梯度消失** 问题，训练更稳定、收敛更快
+>   * Dropout(0.2): 防止过拟合，每次训练随机丢弃20%的神经元
+>   * 第二层：Linear(512,512) -> ReLU() -> Dropout(0.2) 继续进行特征提取
+>   * 第三层: Linear(512,10), 输出10维 表示0~9 
+### 5.3 训练模型
+> ```
+> def train(model,loss,optimizer,x_val,y_val):
+>     model.train()  # 设置为训练模式  让Dropout() 生效，确保训练时随机丢弃神经元
+>     x = x_val.requires_grad_(False)
+>     y = y_val.requires_grad_(False)
+>     optimizer.zero_grad()   # 清空梯度
+>     fx = model.forward(x)   # 前向传播
+>     output = loss.forward(fx,y)  # 计算损失
+>     output.backward()  # 反向传播计算梯度
+>     optimizer.step()  # 更新参数  使用Adam优化器调整权重，让模型更接近真实标签
+>     return output.item()
+> ```
+### 5.4 预测模型
+> ```
+> def predict(model,x_val):
+>     model.eval()  # 让Dropout() 失效(即不再随机丢弃神经元)
+>     x = x_val.requires_grad_(False)  
+>     output = model.forward(x)  # 计算测试集的预测结果
+>     return output.data.numpy().argmax(axis=1)
+> ```
+### 5.5 主函数
+> ```
+> def main():
+>     torch.manual_seed(42)   # 固定随机种子，保证结果可复现
+>     tr_X, te_X, tr_Y, te_Y = load_mnist(onehot=False)  # 载入数据
+>     tr_X = torch.from_numpy(tr_X).float()
+>     te_X = torch.from_numpy(te_X).float()
+>     tr_Y = torch.from_numpy(tr_Y).float()
+>     n_examples, n_features = tr_X.size()  # 获取数据形状
+>     n_classes = 10  # MNIST 有10类
+>     model = build_model(n_features,n_classes)  # 创建神经网络
+>     loss = torch.nn.CrossEntropyLoss(reduction="elementwise_mean")  # 交叉熵损失函数
+>     optimizer = optim.Adam(model.parameters())  # Adam优化器
+>     batch_size = 100  # 每批次大小
+>     for i in range(100):  # 训练100轮
+>         cost = 0.
+>         num_batches = n_examples // batch_size
+>         for k in range(num_batches):
+>             start, end = k * batch_size, (k+1)*batch_size
+>             cost += train(model,loss,optimizer,tr_X[start:end],tr_Y[start:end])
+>             pred_Y = predict(model, te_X)
+>         print(f"Epoch: {i+1}, cost = {cost / num_batches}, acc = {100. * np.mean(pred_Y == te_Y)}")
+> ```
+
+
 
