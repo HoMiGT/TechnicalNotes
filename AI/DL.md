@@ -170,7 +170,7 @@ $$-\frac{1}{256}\begin{bmatrix}
 >   1. 回归问题(Regression)
 >     * 任务：预测连续数值(如房价、气温)。
 >     * 激活函数：输出层用线性激活
->     * 损失函数: MSE(均方误差)  $$L=\frac{1}{N}\sum{(y_{true}-y_pred)^2}$$
+>     * 损失函数: MSE(均方误差)  $$L=\frac{1}{N}\sum{(y_{true}-y_{pred})^2}$$
 >   2. 二分类问题(Binary Classification)
 >     * 任务: 是/否、真/假、正负分类问题。
 >     * 激活函数: Sigmoid
