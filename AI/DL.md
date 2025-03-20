@@ -178,7 +178,7 @@ $$-\frac{1}{256}\begin{bmatrix}
 >   3. 多分类问题(Multi-Class Classification)
 >     * 任务: 手写数字识别(0-9)、图片分类(猫、狗、鸟)。
 >     * 激活函数：Softmax
->     * 损失函数: 交叉熵损失(Categorical Cross Entropy)  $$L=-\sum{y_ilog(\hat{y}_i)}
+>     * 损失函数: 交叉熵损失(Categorical Cross Entropy)  $$L=-\sum{y_ilog(\hat{y}_i)}$$
 > * 实践经验
 >   * 回归问题 --> MSE
 >   * 二分类 --> Sigmoid + 二分类交叉熵
