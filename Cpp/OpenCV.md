@@ -1,6 +1,6 @@
 # 目录
 - [一、OpenCV的主要模块及核心简介](#一OpenCV的主要模块及核心简介)
-- [二、函数](#二函数)
+- [二、Core模块(Core)](#二Core模块-Core-)
   - [1. 图像滤波器](#1-图像滤波器)
     - [1.1 平滑/去噪滤波器](#11-平滑去噪滤波器)
     - [1.2 锐化滤波器](#12-锐化滤波器)
@@ -150,9 +150,22 @@
 >
 > Mat(const std::vector<int>& sizes, int type, void* data, const size_t* steps=0);
 >
+> // m:不会复制任何数据，指向引用的数据。
 > // rowRange:要选取的m行的范围。左闭右开，使用Range::all()获取所有行
 > // colRange:要选取的m列的范围。左闭右开，使用Range::all()获取所有列
 > Mat(const Mat& m, const Range& rowRange, const Range& colRange=Range::all());
+>
+> // m:不会复制任何数据，指向引用的数据。
+> // roi:指向指定区域
+> Mat(const Mat& m, const Rect& roi);
+>
+> // m:不会复制任何数据，指向引用的数据。
+> // ranges: 每个维度选择的范围
+> Mat(const Mat& m, const Range* ranges);
+>
+> Mat(const Mat& m, const std::vector<Range>& ranges);
+>
+> ......
 > ```
 
 
