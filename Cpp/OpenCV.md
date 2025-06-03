@@ -80,7 +80,8 @@
 >     - Face模块(人脸标记)
 
 # 二、Core模块(Core)
-## 1 cv::Mat 图像与多维矩阵的核心
+## 1 核心数据结构
+### 1.1 cv::Mat 图像与多维矩阵的核心
 > - **自动内存管理**
 > ```C++
 > Mat A = (Mat_<double>(6,6)<<
@@ -167,7 +168,60 @@
 >
 > ......
 > ```
-
+> - **复制/引用**
+>   - *clone()*：深拷贝
+>   - *copyTo()*: 复制到目标
+>   - *operator=*: 浅拷贝(共享数据)
+> - **元素访问**
+>   - *.at<T>(y,x)*: 类型安全访问
+>   - *ptr<T>(row)*: 行指针,效率高
+>   - *ptr<T>(y,x)*: 元素指针，效率高
+> - **子矩阵访问**
+> ```
+> Mat roi = mat(Rect(x,y,w,h));
+> ```
+### 1.2 cv::Point,cv::Size,cv::Rect,cv::Scalar
+> - Point(x,y): 坐标
+> - Size(w,h): 宽高
+> - Rect(x,y,w,h): 矩形区域(常用于ROI)
+> - Scalar(b,g,r): 颜色值/多通道常数
+## 2 基本操作与属性
+### 2.1 图像信息
+> ```
+> // 新的行矩阵底层数据与原始矩阵共享 以下均遵循OpenCV浅copy机制，除非特殊说明 时间复杂度O(1)
+> Mat row(int y) const;
+>
+> // 时间复杂度O(1)
+> Mat row(int y) const;
+>
+> // 时间复杂度O(1)
+> Mat rowRange(int startrow, int endrow) const;
+>
+> Mat rowRange(const Range& r) const;
+>
+> Mat colRange(int startcol, int endcol) const;
+>
+> Mat colRange(const Range& r) const;
+>
+> // 对角矩阵
+> Mat diag(int d=0) const;
+>
+> // 完全数据的拷贝,即深拷贝
+> Mat clone() const;
+>
+> // m: 目标矩阵，深拷贝
+> void copyTo(OutputArray m) const;
+>
+> // mask: 与此大小相同的操作掩码，掩码必须为CV_8U类型，可以有一个或多个通道
+> void copyTo(OutputArray m, InputArray mask) const;
+>
+> // 使用可选缩放将数组转换成另一种数据类型
+> // m: 输出矩阵
+> // rtype: 所需要的输出矩阵类型，更确切地说，深度，因为通道数量与输入相同；如果rtype为负,所需的输出矩阵将与输入具有相同的类型
+> // alpha: 可选比例因子，a>1:拉伸像素范围，增加对比度(亮部更亮，暗部更暗)。 0<a<1: 压缩像素范围，降低对比度(图像变灰)。a=1:图像不变。a<0:反转亮度(负片效果)，同时缩放对比度
+> // beta: 添加到缩放值中的可选增量。控制整体图片的亮度。 b>0: 增加亮度(所有像素值整体上移)。 b<0: 降低亮度(所有像素值整体下移)。
+> void convertTo(OutputArray m, int rtype, double alpha=1,double beta=0 ) const;
+> ```
 
 
 
