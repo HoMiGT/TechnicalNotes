@@ -245,7 +245,7 @@
 > // 转置矩阵，返回一个转置表达式，不执行实际的转置，可进一步做更复杂的矩阵表达式
 > MatExpr t() const;
 >
-> // 反转矩阵，返回一个反转表达式，不执行实际的反转
+> // 逆矩阵，返回一个反转表达式，不执行实际的反转
 > MatExpr inv(int method=DECOMP_LU) const;
 >
 > // 执行俩个矩阵的乘法
@@ -312,8 +312,8 @@
 > ```
 ### 2.3 通道差分与合并
 > ```
-> cv::split(mat,channels);
-> cv::merge(channels,mat);
+> CV_EXPORTS_W void split(InputArray m, OutputArrayOfArrays mv);
+> CV_EXPORTS_W void merge(InputArrayOfArrays mv, OutputArray dst);
 > ```
 ### 2.4 数据归一化/缩放
 > ```
@@ -376,6 +376,125 @@
 > // 执行数组的查找表转换
 > // 是一种通过预定义映射关系快速修改像素值的技术，常用于：颜色风格化（如滤镜效果） 对比度增强 色彩空间压缩 医学图像伪彩色
 > CV_EXPORTS_W void LUT(InputArray src, InputArray lut, OutputArray dst);
+>
+> // 计算俩个数组之间或数组和标量之间的每个元素的绝对差
+> // 非饱和运算，主要用于 差异检测、运动分析
+> CV_EXPORTS_W void absdiff(InputArray src1, InputArray src2, OutputArray dst);
+>
+> // 计算俩个数组每个元素逻辑 &
+> // dst(i) = src1(i) & src2(i)
+> // 掩膜（Mask）应用	提取图像中感兴趣区域（ROI）
+> // 图像裁剪	结合矩形/圆形掩膜裁剪特定形状区域
+> // 位平面分解	分离图像的特定位平面（如最高有效位）
+> // 颜色过滤	通过阈值生成掩膜后提取特定颜色区域
+> CV_EXPORTS_W void bitwise_and(InputArray src1, InputArray src2, OutputArray dst, InputArray mask = noArray());
+>
+> // 计算俩个数组每个元素逻辑 |
+> // dst(i) = src1(i) | src2(i)
+> // 图像合成	合并两个图像的ROI（如logo叠加）
+> // 多掩膜合并	将多个二值掩膜合并为一个
+> // 特征增强	增强图像中的特定特征（如边缘+角点组合）
+> // 加密水印	将水印信息嵌入到图像的低位平面
+> CV_EXPORTS_W void bitwise_or(InputArray src1, InputArray src2, OutputArray dst, InputArray mask = noArray());
+>
+> // 计算俩个数组每个元素逻辑 ^
+> // dst(i) = src1(i) ^ src2(2)
+> // 相同为0，不同为1：0⊕0=0, 0⊕1=1, 1⊕0=1, 1⊕1=0
+> // 自反性：a ⊕ b ⊕ b = a（可用于数据加密/解密）
+> // 图像加密与数字水印 实现简单，解密快速
+> // 突出两幅图像的差异区域（比absdiff更敏感）
+> // 交互式绘图工具中切换像素选中状态。切换状态无需条件判断
+> // 快速校验数据完整性（如CRC校验的简化版）
+> CV_EXPORTS_W void bitwise_xor(InputArray src1, InputArray src2, OutputArray dst, InputArray mask = noArray());
+>
+> ```
+### 4.2 统计分析
+> ```
+> // 计算数组元素的平均值，每个通道单独计算并存储在Scalar中
+> CV_EXPORTS_W Scalar mean(InputArray src, InputArray mask = noArray());
+>
+> // 计算数组元素的平均值和标准偏差
+> CV_EXPORTS_W void meanStdDev(InputArray src, OutputArray mean, OutputArray stddev, InputArray mask=noArray());
+>
+> // 找到数组中全局的最大最小值，不适合多通道阵列，多通道的需要先通过reshape转换成单通道的
+> CV_EXPORTS_W void minMaxLoc(InputArray src, CV_OUT double* minVal,
+>                           CV_OUT double* maxVal = 0, CV_OUT Point* minLoc = 0,
+>                           CV_OUT Point* maxLoc = 0, InputArray mask = noArray());
+>
+> // 找到数组中全局的最大与最小的索引
+> CV_EXPORTS void minMaxIdx(InputArray src, double* minVal, double* maxVal = 0,
+>                         int* minIdx = 0, int* maxIdx = 0, InputArray mask = noArray());
+>
+> // 统计非零数组元素
+> CV_EXPORTS_W int countNonZero( InputArray src );
+> ```
+### 4.3 矩阵操作
+> ```
+> // 围绕垂直 水平或俩个轴翻转二维码矩阵
+> // flipCode: 0 x-axis  1 y-axis  -1 xy-axis
+> CV_EXPORTS_W void flip(InputArray src, OutputArray dst, int flipCode);
+>
+> // 垂直拼接
+> CV_EXPORTS void hconcat(InputArray src1, InputArray src2, OutputArray dst);
+>
+> // 水平拼接
+> CV_EXPORTS void vconcat(InputArray src1, InputArray src2, OutputArray dst);
+>
+> // 转置矩阵
+> CV_EXPORTS_W void transpose(InputArray src, OutputArray dst);
+>
+> // 重复填充,用输入数组的重复副本填充输出数组
+> // ny: src沿垂直方向重复的次数
+> // nx: src沿水平方向重复的次数
+> CV_EXPORTS_W void repeat(InputArray src, int ny, int nx, OutputArray dst);
+> ```
+## 5. 线性代数支持
+> ```
+> MatExpr inv(int method=DECOMP_LU) const;
+>
+> MatExpr t() const;
+>
+> // 行列式
+> // mtx: 类型必须具有CV_32FC1或CV_64FC1类型和平方大小的输入矩阵
+> CV_EXPORTS_W double determinant(InputArray mtx);
+>
+> // 解一个或多个线性系统或最小二乘问题
+> // 函数cv::solve解决线性系统或最小二乘问题
+> CV_EXPORTS_W bool solve(InputArray src1, InputArray src2, OutputArray dst, int flags = DECOMP_LU);
+>
+> // 计算对称矩阵的特征值和特征向量
+> CV_EXPORTS_W bool eigen(InputArray src, OutputArray eigenvalues, OutputArray eigenvectors = noArray());
+> ```
+## 6. 常用的辅助函数
+> ```
+> // 多线程与opencv内核设置
+> cv::setNumThreads(4);
+> int threads = cv::getNumThreads();
+> cv::useOptimized(true);
+>
+> // 调试辅助函数
+> cv::namedWindow("debug")
+> cv::imshow("debug",mat)
+> cv::waitKey(0);
+> cv::destroyAllWindows();
+> cv::imwrite("debug.jpg",mat);
+>
+> // 随机生成图像
+> // 生成一个均匀分布的随机数或随机数数组
+> // dst: 随机数输出数组，必须预先分配
+> // low: 生成随机数的包含下限
+> // high: 生成随机数的排他性上限
+> CV_EXPORTS_W void randu(InputOutputArray dst, InputArray low, InputArray high);
+> // 用正态分布随机填充数组
+> // dst: 随机数输出数组，必须预先分配，并且具有1~4个信道
+> // mean: 生成的随机数的平均值(期望值)
+> // stddev: 生成随机数的标准偏差，可以是向量
+> CV_EXPORTS_W void randn(InputOutputArray dst, InputArray mean, InputArray stddev);
+>
+> // 高精度计时
+> CV_EXPORTS_W int64 getTickCount();
+> CV_EXPORTS_W double getTickFrequency();
+> 
 > ```
 
 
