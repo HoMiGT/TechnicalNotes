@@ -3,7 +3,7 @@
 - [二、Core模块(Core)](#二Core模块Core)
   - [1 核心数据结构](#1-核心数据结构)
     - [1.1 cv::Mat图像与多维矩阵的核心](#11-cvMat图像与多维矩阵的核心)
-    - [1.2 cv::Point,cv::Size,cv::Rect,cv::Scalar](#12-cv::Pointcv::Sizecv::Rectcv::Scalar)
+    - [1.2 cv::Point,cv::Size,cv::Rect,cv::Scalar](#12-cvPointcvSizecvRectcvScalar)
   - [2 基本操作与属性](#2-基本操作与属性)
     - [2.1 图像信息](#21-图像信息)
     - [2.2 类型转换](#22-类型转换)
