@@ -8,7 +8,7 @@
     - [1.4 频域滤波](#14-频域滤波)
     - [1.5 方向滤波/特殊滤波器](#15-方向滤波特殊滤波器)
 # 一、OpenCV的主要模块及核心简介
-> - [ ] Core模块(Core)
+> - [x] Core模块(Core)
 >   - 作用：OpenCV的核心模块，提供基本的数据结构(如Mat)、数据操作、绘图函数等。
 >   - 内容:
 >     - cv::Mat图像矩阵数据结构
@@ -221,6 +221,161 @@
 > // alpha: 可选比例因子，a>1:拉伸像素范围，增加对比度(亮部更亮，暗部更暗)。 0<a<1: 压缩像素范围，降低对比度(图像变灰)。a=1:图像不变。a<0:反转亮度(负片效果)，同时缩放对比度
 > // beta: 添加到缩放值中的可选增量。控制整体图片的亮度。 b>0: 增加亮度(所有像素值整体上移)。 b<0: 降低亮度(所有像素值整体下移)。
 > void convertTo(OutputArray m, int rtype, double alpha=1,double beta=0 ) const;
+>
+> // 浅copy,底层共享数据，可转换数据类型，较少使用
+> void assignTo( Mat& m, int type=-1 ) const;
+>
+> // 将输入的数组，设置成指定的值
+> // value: 分配的标量转换成实际的数据类型
+> // mask: 与此大小相同的操作掩码，非0的表示要复制的值，类型必须为CV_8U型，可以1或多通道
+> Mat& setTo(InputArray value, InputArray mask=noArray());
+>
+> // 在不复制数据的情况下，改变2维矩阵的形状和通道数,创建一个新的矩阵头，时间复杂度O(1)
+> // cn: 新的通道数，如果为0，则与之前保持一致
+> // row: 新的行，如果为0，则与之前保持一致
+> Mat reshape(int cn, int rows=0) const;
+> 
+> // newndims: 新的维度数
+> // newsz: 新的全维矩阵大小，如果某些尺寸为0，则与之前保持一致
+> Mat reshape(int cn, int newndims, const int* newsz) const;
+>
+> // newshape: 新的全维矩阵的vector，如果某些尺寸为0，则与之前保持一致
+> Mat reshape(int cn, const std::vector<int>& newshape) const;
+>
+> // 转置矩阵，返回一个转置表达式，不执行实际的转置，可进一步做更复杂的矩阵表达式
+> MatExpr t() const;
+>
+> // 反转矩阵，返回一个反转表达式，不执行实际的反转
+> MatExpr inv(int method=DECOMP_LU) const;
+>
+> // 执行俩个矩阵的乘法
+> MatExpr mul(InputArray m, double scale=1) const;
+>
+> // 计算两个3元向量的叉积。 应用场景3D场景，俩个平面的法向量
+> Mat cross(InputArray m) const;
+>
+> // 计算俩个向量的点积
+> double dot(InputArray m) const;
+>
+> // 返回指定大小和类型的零数组
+> // 返回一个Matlab风格的零数组初始化器。可以用来快速形成一个常量数组。
+> CV_NODISCARD_STD static MatExpr zeros(int rows, int cols, int type);
+> CV_NODISCARD_STD static MatExpr zeros(Size size, int type);
+> CV_NODISCARD_STD static MatExpr zeros(int ndims, const int* sz, int type);
+>
+> // 返回指定大小和类型的所有1的数组
+> // 返回一个Matlab风格1的数组初始化器
+> CV_NODISCARD_STD static MatExpr ones(int rows, int cols, int type);
+> CV_NODISCARD_STD static MatExpr ones(Size size, int type);
+> CV_NODISCARD_STD static MatExpr ones(int ndims, const int* sz, int type);
+>
+> // 返回指定大小和类型的单位矩阵
+> CV_NODISCARD_STD static MatExpr eye(int rows, int cols, int type);
+> CV_NODISCARD_STD static MatExpr eye(Size size, int type);
+>
+> // 返回矩阵元素大小(以字节为单位)
+> // 通道数 * sizeof(类型)
+> size_t elemSize() const;
+>
+> // 返回矩阵元素通道的大小(以字节为单位)
+> // sizeof(类型)
+> size_t elemSize1() const;
+>
+> // 类型
+> int type() const;
+>
+> // 位深度
+> int depth() const;
+>
+> // 通道数
+> int channels() const;
+>
+> 是否为空
+> bool empty() const;
+>
+> // 矩阵的所有元素大小
+> size_t total() const;
+>
+> // 返回矩阵的行指针
+> template<typename _Tp> _Tp* ptr(int i0=0);
+>
+> // 返回矩阵的元素指针
+> template<typename _Tp> _Tp* ptr(int row, int col);
+>
+> // 元素访问的安全版本
+> template<typename _Tp> _Tp& at(int row, int col);
+> ```
+### 2.2 类型转换
+> ```
+> // 线性变化 y=ax+b; 如下表示的是 a=1.0/255.0 b=0
+> mat.convertTo(dst,CV_32F,1.0/255.0); // 归一化
+> ```
+### 2.3 通道差分与合并
+> ```
+> cv::split(mat,channels);
+> cv::merge(channels,mat);
+> ```
+### 2.4 数据归一化/缩放
+> ```
+> // 数据归一化，特征缩放，预处理
+> // 我想让所有像素乘以2再加10 -> convertTo (速度通常更快，静态，参数明确)
+> // 我想让图像像素最小值为0，最大值为255 -> normalize (复杂处理步骤多，动态，依赖输入数据的特征)
+> cv::normalize(src,dst,0,255,cv::NORM_MINMAX);
+>
+> // 重置图像大小
+> // src: 原图像
+> // dst: 目标图像
+> // size: cv::Size指定大小
+> // fx: x的缩放因子
+> // fy: y的缩放因子
+> cv::resize(src,dst,size,fx,fy);
+> ```
+## 3. 绘制图像(常用于调试和可视化)
+> ```
+> // 线条
+> cv::line(img,p1,p2,color,thickness);
+>
+> // 矩形区域
+> cv::rectangle(img,rect,color,thickness);
+>
+> // 圆圈
+> cv::circle(img,center,radius,color,thickness);
+>
+> 绘制文本
+> cv::putText(img,text,pos,FONT_HERSHEY_SIMPLEX,scale,color);
+> ```
+## 4. 数学函数和数组运算
+### 4.1 通用矩阵运算
+> ```
+> // 矩阵相加
+> // 输入矩阵与输出矩阵都可以具有相同或不同的深度。
+> // 类型大的兼容小的，可以通过dtype来指定大的类型
+> // 如果 src1.depth() == src2.depth()， 则默认 dtype=-1
+> CV_EXPORTS_W void add(InputArray src1, InputArray src2, OutputArray dst,InputArray mask = noArray(), int dtype = -1);
+>
+> // 矩阵相减
+> // dst = src1 - src2  等同于 subtract(src1, src2 ,dst);
+> // dst -= src1 等同于 subtract(dst, src1, dst);
+> CV_EXPORTS_W void subtract(InputArray src1, InputArray src2, OutputArray dst,InputArray mask = noArray(), int dtype = -1);
+>
+> // 矩阵相乘
+> // 计算俩个数组的按元素缩放的乘积
+> CV_EXPORTS_W void multiply(InputArray src1, InputArray src2,OutputArray dst, double scale = 1, int dtype = -1);
+>
+> // 矩阵相除
+> // 执行每个元素的除法
+> CV_EXPORTS_W void divide(InputArray src1, InputArray src2, OutputArray dst, double scale = 1, int dtype = -1);
+>
+> // 转换成半精度的float
+> CV_EXPORTS_W void convertFp16(InputArray src, OutputArray dst);
+>
+> // 计算俩个数组的加权和，每个通道都是独立处理的
+> // dst = src1 * alpha + src2 * gamma;
+> CV_EXPORTS_W void addWeighted(InputArray src1, double alpha, InputArray src2, double beta, double gamma, OutputArray dst, int dtype = -1);
+>
+> // 执行数组的查找表转换
+> // 是一种通过预定义映射关系快速修改像素值的技术，常用于：颜色风格化（如滤镜效果） 对比度增强 色彩空间压缩 医学图像伪彩色
+> CV_EXPORTS_W void LUT(InputArray src, InputArray lut, OutputArray dst);
 > ```
 
 
