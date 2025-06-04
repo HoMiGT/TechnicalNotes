@@ -2,7 +2,7 @@
 - [一、OpenCV的主要模块及核心简介](#一OpenCV的主要模块及核心简介)
 - [二、Core模块(Core)](#二Core模块Core)
   - [1 核心数据结构](#1-核心数据结构)
-    - [1.1 cv::Mat 图像与多维矩阵的核心](#11-cv::Mat-图像与多维矩阵的核心)
+    - [1.1 cv::Mat图像与多维矩阵的核心](#11-cv::Mat图像与多维矩阵的核心)
     - [1.2 cv::Point,cv::Size,cv::Rect,cv::Scalar](#12-cv::Point,cv::Size,cv::Rect,cv::Scalar)
   - [2 基本操作与属性](#2-基本操作与属性)
     - [2.1 图像信息](#21-图像信息)
@@ -90,7 +90,7 @@
 
 # 二、Core模块(Core)
 ## 1 核心数据结构
-### 1.1 cv::Mat 图像与多维矩阵的核心
+### 1.1 cv::Mat图像与多维矩阵的核心
 > - **自动内存管理**
 > ```C++
 > Mat A = (Mat_<double>(6,6)<<
@@ -339,7 +339,7 @@
 > // fy: y的缩放因子
 > cv::resize(src,dst,size,fx,fy);
 > ```
-## 3. 绘制图像(常用于调试和可视化)
+## 3 绘制图像(常用于调试和可视化)
 > ```
 > // 线条
 > cv::line(img,p1,p2,color,thickness);
@@ -353,7 +353,7 @@
 > 绘制文本
 > cv::putText(img,text,pos,FONT_HERSHEY_SIMPLEX,scale,color);
 > ```
-## 4. 数学函数和数组运算
+## 4 数学函数和数组运算
 ### 4.1 通用矩阵运算
 > ```
 > // 矩阵相加
@@ -457,7 +457,7 @@
 > // nx: src沿水平方向重复的次数
 > CV_EXPORTS_W void repeat(InputArray src, int ny, int nx, OutputArray dst);
 > ```
-## 5. 线性代数支持
+## 5 线性代数支持
 > ```
 > MatExpr inv(int method=DECOMP_LU) const;
 >
@@ -474,7 +474,7 @@
 > // 计算对称矩阵的特征值和特征向量
 > CV_EXPORTS_W bool eigen(InputArray src, OutputArray eigenvalues, OutputArray eigenvectors = noArray());
 > ```
-## 6. 常用的辅助函数
+## 6 常用的辅助函数
 > ```
 > // 多线程与opencv内核设置
 > cv::setNumThreads(4);
