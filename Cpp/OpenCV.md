@@ -894,6 +894,58 @@ Roberts交叉梯度算子是最早的边缘检测算法，使用2x2的卷积核�
 - 计算机视觉 特征提取做预处理 人脸识别、物体检测等
 
 #### 1.4.3 带通/带阻滤波器
+带通滤波器：只保留某一特定频率范围的图像成分(通常介于低频与高频之间)     
+带阻滤波器：抑制某一特定频率范围，保留其它低频/高频部分
+
+应用场景：
+- 材料纹理分析 提取某种特定频率纹理特征
+- 模式识别/缺陷检测 屏蔽某种频率带的干扰或特征
+- 去周期噪声 带阻滤波器可抑制图像中周期性条纹或干扰波
+- 视觉增强 保留对比度显著的纹理区域，去除大面积低频背景
+```
+Mat img = imread("1.jpg",IMREAD_GRAYSCALE);
+// 扩展图像尺寸为2的幂大小(优化DFT效率)
+int m = getOptimalDFTSize(img.rows);
+int n = getOptimalDFTSize(img.cols);
+Mat padded;
+// 边缘扩充函数，在图像的四周增加像素边界(上下左右)，并按指定的方式填充这些新区域。
+copyMakeBorder(img,padded,0,m-img.rows,0,n-img.cols,BORDER_CONSTANT,cv::Scalar::all(0));  
+// 傅里叶变换(DFT)
+Mat planes[] = {Mat_<float>(padded), Mat::zeros(padded.size(),CV_32F)};
+Mat complexImg;
+merge(planes, 2, complexImg);
+dft(complexImg, complexImg);
+// 构造带通 / 带阻掩膜
+int cx = complexImg.cols / 2;
+int cy = complexImg.rows / 2;
+float r_inner = 30.0f;  // 内圈半径
+float r_outer = 60.0f;  // 外圈半径
+
+cv::Mat mask = cv::Mat::zeros(complexImg.size(), CV_32F);
+
+for (int y = 0; y < mask.rows; ++y) {
+    for (int x = 0; x < mask.cols; ++x) {
+        float dist = std::sqrt(std::pow(x - cx, 2) + std::pow(y - cy, 2));
+        // 带通：只保留一定范围
+        if (dist >= r_inner && dist <= r_outer) {
+            mask.at<float>(y, x) = 1.0f;
+        }
+    }
+}
+
+// 创建2通道掩码
+cv::Mat mask2ch[] = {mask.clone(), mask.clone()};
+cv::Mat complexMask;
+cv::merge(mask2ch, 2, complexMask);
+// 应用掩膜
+mulSpectrums(complexImg, complexMask, complexImg, 0);
+// 反变换还原图像
+cv::Mat invDFT;
+cv::idft(complexImg, invDFT, cv::DFT_SCALE | cv::DFT_REAL_OUTPUT);
+cv::Mat finalImg;
+invDFT(cv::Rect(0, 0, img.cols, img.rows)).convertTo(finalImg, CV_8U);
+```
+
 ### 1.5 方向滤波/特殊滤波器
 #### 1.5.1 方向增强滤波器 
 #### 1.5.2 Gabor滤波器
