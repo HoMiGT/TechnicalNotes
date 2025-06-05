@@ -16,6 +16,7 @@
     - [4.3 矩阵操作](#43-矩阵操作)
   - [5 线性代数支持](#5-线性代数支持)
   - [6 常用的辅助函数](#6-常用的辅助函数)
+- [三、图形处理模块(imgproc)](#三图形处理模块imgproc)
 # 一、OpenCV的主要模块及核心简介
 > - [x] Core模块(Core)
 >   - 作用：OpenCV的核心模块，提供基本的数据结构(如Mat)、数据操作、绘图函数等。
@@ -25,7 +26,7 @@
 >     - 随机数生成器
 >     - 文件存储与读取(YAML，XML)
 >     - 线性代数与基本数学函数 
-> - [ ] 图形处理模块(imgproc)
+> - [x] 图形处理模块(imgproc)
 >   - 作用: 图像的基本处理操作模块。
 >   - 内容：
 >     - 滤波器(平滑、锐化等)
@@ -505,10 +506,7 @@
 > CV_EXPORTS_W double getTickFrequency();
 > 
 > ```
-
-
-
-# 二、函数
+# 三、图形处理模块(imgproc)
 ## 1. 图像滤波器
 |任务|推荐滤波器|原因|
 |:--:|:--:|:--:|
@@ -518,9 +516,30 @@
 |OCR提取|自适应高斯+Sobel|背景压制+字符突出|
 |激光线提取|Gabor/Sobel(垂直)|精准提取单方向结构|
 |实时视频降噪|中值滤波(高速)/时域滤波|快速去除噪点，实时处理|
-
 ### 1.1 平滑/去噪滤波器
 #### 1.1.1 均值滤波 Mean
+> 均值滤波是一种最常见的图像平滑(模糊)技术，它的基本原理是通过一个卷积核(通常是一个大小为奇数的矩阵)对图像进行处理，
+> 将每个像素点的值替换为其领域(窗口)像素值的平均值。它的主要作用是去除图像中的噪声，同时保持图像的大致结构，但可能会模糊一些边缘信息。
+> **CV_EXPORTS_W void blur( InputArray src, OutputArray dst, Size ksize, Point anchor = Point(-1,-1), int borderType = BORDER_DEFAULT );**     
+> - ksize: 卷积核大小,通常是一个奇数，3,5,7。 数值越大，平滑效果越强，图像的细节会丢失更多。
+> - anchor: 锚点，(-1,-1)表示位于内核中心，Point(0,0)表示卷积核的左上角对齐到当前像素位置。
+> - borderType: 边界处理方式，处理图像边界时的策略，决定了滤波器如何处理图像边缘的像素。  
+>   - BORDER_CONSTANT: 常数填充，边界区域填充为指定常数值
+>   - BORDER_REPLICATE：复制边界像素
+>   - BORDER_REFLECT：反射边界像素
+>   - BORDER_WRAP：环绕边界像素
+>   - BORDER_REFLECT_101：反射边界像素，去除边界像素
+>
+> // 更灵活的均值滤波实现，允许用户指定卷积核的大小和边界条件     
+> CV_EXPORTS_W void boxFilter( InputArray src, OutputArray dst, int ddepth,
+>                            Size ksize, Point anchor = Point(-1,-1),
+>                            bool normalize = true,
+>                            int borderType = BORDER_DEFAULT );    
+>
+> // 自定义卷积核      
+> CV_EXPORTS_W void filter2D( InputArray src, OutputArray dst, int ddepth,
+>                           InputArray kernel, Point anchor = Point(-1,-1),
+>                           double delta = 0, int borderType = BORDER_DEFAULT );
 > 
 #### 1.1.2 高斯滤波 GaussianBlur
 > **CV_EXPORTS_W void GaussianBlur( InputArray src, OutputArray dst, Size ksize,double sigmaX, double sigmaY = 0, int borderType = BORDER_DEFAULT );**    
@@ -547,12 +566,84 @@
 > |背景建模模糊|1.0~2.5|
 > |高斯差分检测|0.5~2.0|
 > |光照不均处理前预平滑|2.0+|
-
 #### 1.1.3 中值滤波 Median
+> 中值滤波是一种非线性滤波技术，常用于去噪、平滑图像。
+> 其主要特点是通过取领域内像素的中值来替代当前像素值。与均值滤波不同，均值滤波是对领域内的像素值进行加权平均
+> 而中值滤波通过排序选择领域的中值，这样可以有效去除图像中的“椒盐噪声”
+> **CV_EXPORTS_W void medianBlur( InputArray src, OutputArray dst, int ksize );**    
+> - src: 输入图像
+> - dst: 输出图像(经过中值滤波后的结果)
+> - ksize: 滤波器的大小，必须是奇数(3,5,7等),较大的值产生更强的平滑效果，但也会模糊图像细节
+> 应用场景：特别适合去除椒盐噪声，边缘保持，修复损坏图像
+> 
 #### 1.1.4 双边滤波 Bilateral
+> 双边滤波是一种非线性滤波技术，在平滑图像的同时，能够较好地保留图像的边缘细节。相较于其他滤波器，它非常地慢     
+> 核心思想：不仅考虑空间距离(像素位置的距离)，还考虑像素值的相似性。
+> - 空间距离权重：领域内像素的空间距离越近，权重越大
+> - 像素值差异权重：像素值差异越小，权重越大     
+> **CV_EXPORTS_W void bilateralFilter( InputArray src, OutputArray dst, int d,**
+>                                  **double sigmaColor, double sigmaSpace,**
+>                                  **int borderType = BORDER_DEFAULT );**
+> - d: 滤波过程中使用的每个像素邻域的直径。如果它不是正的，则根据sigmaSpace计算。 通常设置5-15之间，d=9是较为通用的值，适用于大多数图像
+> - sigmaColor: 颜色空间的标准差，决定了像素值相似性的影响程度。较大的sigmaColor使得像素值差异较大的区域也会受到影响。通常75能达到较好的效果
+> - sigmaSpace: 空间坐标的标准差，决定了空间距离的影响范围。较大的sigmaSpace会让较远的像素也参与计算。 通常保持在50~100,75通常能达到较好的效果
+> - borderType: borderType——用于推断图像外部像素的边框模式，请参阅#BorderTypes。
+> 应用场景：去噪且保边缘，图像美化与去斑点，边缘检测前的平滑(如Canny,Sobel)，去除高斯噪声与斑点噪声，动漫风格处理。
+>
+> |d领域直径|sigmaColor(颜色标准差)|sigmaSpace(空间标准差)|备注|
+> |:--:|:--:|:--:|:--:|
+> |5|30~50|30~50|适用于细节较多的图像，效果较锐利|
+> |9|50~100|50~100|通用设置，适用于大部分图像|
+> |15|100~150|100~150|平滑效果更强，适合较大图像|
+> 
 #### 1.1.5 自定义核滤波
+> **CV_EXPORTS_W void filter2D( InputArray src, OutputArray dst, int ddepth,**
+>                           **InputArray kernel, Point anchor = Point(-1,-1),**
+>                           **double delta = 0, int borderType = BORDER_DEFAULT );**     
+> kernel卷积核
+> - 均值滤波
+> ```
+> Mat kernel=(Mat_<float>(3,3) << 1/9.0,1/9.0,1/9.0,
+>                                 1/9.0,1/9.0,1/9.0,
+>                                1/9.0,1/9.0,1/9.0);
+> ```
+> - 锐化滤波
+> ```
+> Mat kernel=(Mat_<float>(3,3) << 0,-1,0,
+>                                -1,5,-1,
+>                                 0,-1,0);
+> ```
+> - 边缘检测(Sobel核)
+> ```
+> Mat kernel=(Mat_<float>(3,3) << -1,0,1,
+>                                 -2,0,2,
+>                                 -1,0,1);
+> ```
+> 自定义卷积核的设计在于如何选择权重。不同的权重组合会产生不同的图像效果。
+> 一些常见的自定义卷积核设计思路:
+> - 锐化：通过在中心位置增加更大的权重，周围值为负数，使图像的细节变得更加清晰。
+> - 平衡/模糊: 通过平均领域的像素值来去除图像的噪声或细节，使图像看起来更平滑。
+> - 边缘检测：使用Sobel、Prewitt、Laplacian等边缘检测核，通过加强图像的梯度信息来提取图像边缘。
+> - 降噪：设计核进行平滑，从而去除图像中噪声
 ### 1.2 锐化滤波器
-#### 1.2.1 拉普拉斯 Laplacian 
+> 锐化的本质是强调图像中像素变化较大的区域(通常是边缘)，其原理通常是基于拉普拉斯算子或高通滤波：
+> - 强化边缘(像素变化剧烈的地方)
+> - 抑制平滑区域(像素差异较小)
+#### 1.2.1 拉普拉斯 Laplacian
+> Laplacian是一种二阶导数运算符
+> ```
+> 0  1  0
+> 1 -4  1
+> 0  1  0
+>
+> 1  1  1
+> 1 -8  1
+> 1  1  1 
+> ```
+> **CV_EXPORTS_W void Laplacian( InputArray src, OutputArray dst, int ddepth,**
+>                            **int ksize = 1, double scale = 1, double delta = 0,**
+>                            **int borderType = BORDER_DEFAULT );**
+> 
 #### 1.2.2 Sobel 
 #### 1.2.3 Scharr
 #### 1.2.4 锐化核
