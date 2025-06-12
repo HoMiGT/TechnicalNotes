@@ -43,6 +43,21 @@
       - [1.5.1 方向增强滤波器](#151-方向增强滤波器)
       - [1.5.2 Gabor滤波器](#152-Gabor滤波器)
       - [1.5.3 DoG 高斯差分](#153-DoG高斯差分)
+  - [2 边缘检测](#2-边缘检测)
+  - [3 几何变换](#3-几何变换)
+    - [3.1 基本仿射变换](#31-基本仿射变换)
+    - [3.2 投影/透视变换](#32-投影/透视变换)
+    - [3.3 重映射](#33-重映射)
+    - [3.4 几何辅助函数](#34-几何辅助函数)
+  - [4 形态学操作](#4-形态学操作)
+    - [4.1 膨胀](#41-膨胀)
+    - [4.2 腐蚀](#42-腐蚀)
+    - [4.3 开运算](#43-开运算)
+    - [4.4 闭运算](#44-闭运算)
+    - [4.5 形态学梯度](#45-形态学梯度)
+    - [4.6 顶帽](#46-顶帽)
+    - [4.7 黑帽](#47-黑帽)
+    - [4.8 击中击不中](#48-击中击不中)
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
   - 作用：OpenCV的核心模块，提供基本的数据结构(如Mat)、数据操作、绘图函数等。
@@ -948,5 +963,192 @@ invDFT(cv::Rect(0, 0, img.cols, img.rows)).convertTo(finalImg, CV_8U);
 
 ### 1.5 方向滤波/特殊滤波器
 #### 1.5.1 方向增强滤波器 
+- Sobel滤波器(方向性边缘检测)
+```
+cv::Mat sobelX, sobelY
+cv::Sobel(src, sobelX,CV_32F,1,0);  // 1,0 表示在X方向取一阶导数
+cv::Sobel(src, sobelY,CV_32F,0,1);  // 0,1 表示在Y方向取一阶导数
+```
+- Sharr滤波器(更精确的方向导数)
+```
+cv::Mat sharrX,scharrY;
+cv::Scharr(src, scharrX,CV_32F,1,0); // x方向
+cv::Scharr(src, scharrY,CV_32F,0,1); // y方向
+// 相较于Sobel, Scharr在小核尺寸下效果更好，尤其在边缘检测时更准确。
+```
 #### 1.5.2 Gabor滤波器
+用于特定方向/频率增强    
+```
+// CV_PI/4 表示滤波器的方向为45°
+// 可通过改变方向参数设计多个方向的滤波器，提取不同方向纹理
+cv::Mat kernel = cv::getGaborKernel(cv::Size(21,21),4.0,CV_PI/4,10.0,0.5,0,CV_32F);
+cv::Mat filtered;
+cv::filter2D(src,filtered,CV_32F,kernel);
+```
 #### 1.5.3 DoG高斯差分
+DoG(Difference of Gaussians) = 俩个不同尺度的高斯模糊图像之间的差值    
+DoG近似于拉普拉斯高斯(LoG)
+```
+Mat src = imread("input.jpg",IMREAD_GRAYSCALE);
+Mat gauss1,gauss2,dog;
+double sigma1 = 1.0;
+double sigma2 = 2.0;
+GaussianBlur(src,gauss1,Size(0,0),sigma1);
+GaussianBlur(src,gauss2,Size(0,0),sigma2);
+// 相减得到DoG图像
+subtract(gauss1,gauss2,dog,noArray(),CV_32F);
+normalize(dog,dog,0,255,NORM_MINMAX);
+dog.convertTo(dog,CV_8U);
+```
+## 2 边缘检测
+常用于:
+- 物体检测与分割
+- 图像特征提取(如轮廓、角点)
+- 图像增强
+边缘检测的基本流程:
+1. **预处理**: 图像灰度化 + 去噪(高斯模糊)
+2. **梯度计算**: 检测像素灰度的突变(常用Sobel、Laplacian、Canny)
+3. **非极大值抑制**: 某些算法
+4. **阈值处理**: 决定是否保留某条边缘
+常用边缘检测方法：
+1. **Canny**: 经典高性能算法 最常用
+```
+Mat img = imread("input.jpg",IMREAD_GRAYSCALE);
+Mat blurred, edges;
+GaussianBlur(img,blurred,Size(5,5),1.4);
+Canny(blurred,edges,100,200);  // 低,高阈值
+// 优点：边缘细，连续性强
+// 参数调整关键：俩个阈值(低高阈值用于边缘连接)
+```
+2. **Sobel**: 一阶导数，计算梯度方向
+```
+Mat grad_x,grad_y,abs_x,abs_y,grad;
+Sobel(img,grad_x,CV_16S,1,0);
+Sobel(img,grad_y,CV_16S,0,1);
+convertScaleAbs(grad_x,abs_x);
+convertScaleAbs(grad_y,abs_y);
+addWeighted(abs_x,0.5,abs_y,0.5,0,grad);
+// 用于检测水平方向和垂直方向的边缘
+// 可以进一步求出梯度角度(用于方向判断)
+```
+3. **Laplacian**: 二阶导数，检测强烈边缘
+```
+Mat lap,laplacian;
+Laplacian(img,lap,CV_16S,3);
+convertScaleAbs(lap,laplacian);
+// 敏感度高，容易噪声大
+// 可用于检测图像快速变化的区域
+```
+4. **Scharr**: 比Sobel更精细的梯度算子
+```
+Mat gray_x,gray_y,grad;
+Scharr(img,grad_x,CV_16S,1,0);
+Scharr(img,grad_y,CV_16S,0,1);
+// 精度比Sobel高，但用途类似
+```
+示例：边缘检测 + 轮廓提取
+```
+Mat img = imread("input.jpg",IMREAD_GRAYSCALE);
+Mat edges;
+Canny(img,edges,100,200);
+vector<vector<Point>> contours;
+findContours(edges,contours,RETR_EXTERNAL,CHAIN_APPROX_SIMPLE);
+Mat result = Mat::zeros(img.size(),CV_8UC3);
+drawContours(result,contours,-1,Scalar(0,255,0));
+```
+## 3 几何变换
+### 3.1 基本仿射变换
+1. **缩放**: cv::resize
+```
+// 重置图片大小
+// 如果仅想调整图片大小  resize(src, dst, dst.size(), 0, 0, interpolation)
+// 如果想放大图片为原来2倍  resize(src, dst, Size(), 0.5, 0.5 ,interpolation)
+// 缩小图片，INTER_AREA 插值效果好
+// 放大图片，INTER_CUBIC(慢)或INTER_LINEAR(更快些)
+CV_EXPORTS_W void resize( InputArray src, OutputArray dst,
+                          Size dsize, double fx = 0, double fy = 0,
+                          int interpolation = INTER_LINEAR );
+```
+2. **旋转**: cv::getRotationMatrix2D + cv::warpAffine
+```
+// 计算二维旋转的仿射矩阵
+// center: 源图像中的旋转中心
+// angle: 旋转角度，单位为度, 正值表示逆时针旋转（坐标原点假定为左上角）
+// scale: 各向同性标度因子
+CV_EXPORTS_W Mat getRotationMatrix2D(Point2f center, double angle, double scale);
+
+// 对图像应用的仿射变换
+// M: 2x3的变换矩阵
+CV_EXPORTS_W void warpAffine( InputArray src, OutputArray dst,
+                              InputArray M, Size dsize,
+                              int flags = INTER_LINEAR,
+                              int borderMode = BORDER_CONSTANT,
+                              const Scalar& borderValue = Scalar());
+```
+3. **平移**： 直接构造仿射矩阵
+```
+Mat trans = (Mat_<double>(2,3) << 1,0,tx,0,1,ty);
+warpAffine(src, dst, trans, src.size());
+```
+4. **任意仿射变换(三点对应)**: cv::getAffineTransform
+```
+vector<Point2f> srcTri = {p1,p2,p3};
+vector<Point2f> dstTri = {q1,q2,q3};
+Mat M = getAffineTransform(srcTri, dstTri);
+warpAffine(src, dst, M, src.size());
+```
+### 3.2 投影/透视变换
+特点：支持"远大近小"效果(透视投影)     
+适用于：车道线矫正、二维码识别、图像配准、投影矫正等。
+```
+vector<Point2f> srcPts{...}, dstPts{...};
+Mat M = getPerspectiveTransform(srcPts, dstPts);
+warpPerspective(src, dst, M, dstSize);
+
+// 从4对点计算透视变换
+// solveMethod: 详见 enum DecompTypes
+CV_EXPORTS_W Mat getPerspectiveTransform(InputArray src, InputArray dst, int solveMethod = DECOMP_LU);
+```
+### 3.3 重映射
+适合自定义每个像素怎么映射(如鱼眼纠正、图像扭曲)
+```
+Mat map_x,map_y;
+remap(src,dst,map_x,map_y,INTER_LINEAR);
+
+// 对图像进行通用几何变换
+CV_EXPORTS_W void remap( InputArray src, OutputArray dst,
+                         InputArray map1, InputArray map2,
+                         int interpolation, int borderMode = BORDER_CONSTANT,
+                         const Scalar& borderValue = Scalar());
+```
+### 3.4 几何辅助函数
+插值方法
+|插值方式|枚举值|说明|
+|:--:|:--:|:--:|
+|最近邻|INTER_NEAREST|快速但不平滑|
+|双线性|INTER_LINEAR|默认值，平滑|
+|三次卷积|INTER_CUBIC|效果更好,计算慢|
+|Lanczos|INTER_LANCZOS4|高清图像时效果好|
+
+## 4 形态学操作
+主要用于: 
+- 去噪
+- 连接物体
+- 提取边界
+- 分割图像结构
+本质是基于“结构元素(kernel)”对图像的像素进行处理，特别适合二值图像(黑白图),但也可用于灰度图    
+**核心工具**：结构元素
+```
+Mat kernel = getStructuringElement(MORPH_RECT,Size(3,3));
+```
+- 矩形: MORPH_REACT
+- 椭圆: MORPH_ELLIPSE
+- 十字: MORPH_CROSS
+### 4.1 膨胀
+### 4.2 腐蚀
+### 4.3 开运算
+### 4.4 闭运算
+### 4.5 形态学梯度
+### 4.6 顶帽
+### 4.7 黑帽
+### 4.8 击中击不中
