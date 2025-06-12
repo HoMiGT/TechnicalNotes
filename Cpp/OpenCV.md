@@ -58,6 +58,9 @@
     - [4.6 顶帽](#46-顶帽)
     - [4.7 黑帽](#47-黑帽)
     - [4.8 击中击不中](#48-击中击不中)
+  - [5 阈值化与直方图处理](#5-阈值化与直方图处理)
+    - [5.1 阈值化](#51-阈值化)
+    - [5.2 直方图处理](#52-直方图处理)
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
   - 作用：OpenCV的核心模块，提供基本的数据结构(如Mat)、数据操作、绘图函数等。
@@ -67,7 +70,7 @@
     - 随机数生成器
     - 文件存储与读取(YAML，XML)
     - 线性代数与基本数学函数 
-- [ ] 图形处理模块(imgproc)
+- [x] 图形处理模块(imgproc)
   - 作用: 图像的基本处理操作模块。
   - 内容：
     - 滤波器(平滑、锐化等)
@@ -1145,10 +1148,127 @@ Mat kernel = getStructuringElement(MORPH_RECT,Size(3,3));
 - 椭圆: MORPH_ELLIPSE
 - 十字: MORPH_CROSS
 ### 4.1 膨胀
+```
+Mat kernel = getStructuringElement(MORPH_RECT,Size(3,3))
+Mat src = imread("input.jpg",IMREAD_GRAYSCALE)
+Mat dilated;
+// 白的区域会变大
+dilate(src, dilated,kernel);
+```
 ### 4.2 腐蚀
+```
+Mat kernel = getStructuringElement(MORPH_RECT,Size(3,3))
+Mat src = imread("input.jpg",IMREAD_GRAYSCALE)
+Mat eroded;
+// 白的区域会变小
+erode(src, dilated,kernel);
+```
 ### 4.3 开运算
+```
+// 等于 erode -> dilate
+// 用于去除小颗粒噪声，保留大物体
+cv::morphologyEx(src, opened, cv::MORPH_OPEN, kernel);
+```
 ### 4.4 闭运算
+```
+// 等于 dilate -> erode
+// 用于连接断裂的白色区域或填补黑点
+cv::morphologyEx(src, opened, cv::MORPH_CLOSE, kernel);
+```
 ### 4.5 形态学梯度
+```
+// 等于 dialte - erode
+// 图像边缘最明显，适合找轮廓
+cv::morphologyEx(src, grad, cv::MORPH_GRADIENT, kernel);
+```
 ### 4.6 顶帽
+```
+cv::morphologyEx(src, tophat, cv::MORPH_TOPHAT, kernel);     // 原图 - 开  突出亮细节  在图像增强与照明补偿中有用
+```
 ### 4.7 黑帽
+```
+cv::morphologyEx(src, blackhat, cv::MORPH_BLACKHAT, kernel); // 闭 - 原图 突出暗细节  在图像增强与照明补偿中有用
+```
 ### 4.8 击中击不中
+```
+// 用于形状匹配检测 只能用于二值图（0/1），不常用
+cv::Mat thres;
+cv::threshold(src, thres, 127, 1, cv::THRESH_BINARY); // 图像需为0/1值
+cv::morphologyEx(thres, hitmiss, cv::MORPH_HITMISS, kernel);  
+```
+汇总
+| 操作名称  | OpenCV 函数                            | 用途       |
+| ----- | ------------------------------------ | -------- |
+| 膨胀    | `cv::dilate`                         | 扩大白色区域   |
+| 腐蚀    | `cv::erode`                          | 收缩白色区域   |
+| 开运算   | `cv::morphologyEx(..., MORPH_OPEN)`  | 去小白点     |
+| 闭运算   | `cv::morphologyEx(..., MORPH_CLOSE)` | 连续白色块、填洞 |
+| 梯度    | `MORPH_GRADIENT`                     | 提取边缘     |
+| 顶帽    | `MORPH_TOPHAT`                       | 提亮细节     |
+| 黑帽    | `MORPH_BLACKHAT`                     | 提亮暗部     |
+| 击中击不中 | `MORPH_HITMISS`                      | 二值图形态匹配  |
+
+## 5 阈值化与直方图处理
+### 5.1 阈值化
+```
+// THRESH_BINARY	大于阈值为 maxval，否则为 0	白底黑字
+// THRESH_BINARY_INV	小于阈值为 maxval，否则为 0	黑底白字
+// THRESH_TRUNC	大于阈值则设为阈值，其它保持	裁剪过亮
+// THRESH_TOZERO	小于阈值设为 0，大于保持原值	保留高亮
+// THRESH_TOZERO_INV	大于阈值设为 0，小于保持	保留暗部
+double cv::threshold(
+    InputArray src,        // 输入图像（8-bit 单通道）
+    OutputArray dst,       // 输出图像
+    double thresh,         // 阈值
+    double maxval,         // 最大值
+    int type               // 阈值类型
+);
+
+cv::Mat gray = cv::imread("img.jpg", cv::IMREAD_GRAYSCALE);
+cv::Mat binary;
+cv::threshold(gray, binary, 127, 255, cv::THRESH_BINARY);
+
+// 自适应阈值(局部不同)
+// blockSize: 局部区域大小(必须是奇数)
+// C: 从局部均值中减去的常数
+cv::adaptiveThreshold(src, dst, 255,
+                      cv::ADAPTIVE_THRESH_GAUSSIAN_C, 
+                      cv::THRESH_BINARY,
+                      blockSize, C);
+
+// Otsu 自动阈值法
+// 自动选出最佳全局阈值（图像必须是单通道灰度图）
+cv::threshold(src, dst, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
+```
+### 5.2 直方图处理
+- 计算直方图
+```
+// image：输入图像（灰度/彩色都行）
+// channels：通道索引（灰度用 {0}）
+// hist：输出直方图
+// histSize：多少个灰度 bin（如 256）
+// ranges：灰度范围 [0, 256]
+cv::calcHist(&image, 1, channels, cv::Mat(), hist, 1, &histSize, &ranges);
+```
+- 绘制直方图(伪图)
+```
+int hist_w = 512, hist_h = 400;
+int bin_w = cvRound((double) hist_w / histSize);
+
+cv::Mat histImage(hist_h, hist_w, CV_8UC1, cv::Scalar(0));
+
+cv::normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX);
+
+for (int i = 1; i < histSize; i++) {
+    cv::line(histImage,
+             cv::Point(bin_w*(i-1), hist_h - cvRound(hist.at<float>(i-1))),
+             cv::Point(bin_w*(i), hist_h - cvRound(hist.at<float>(i))),
+             cv::Scalar(255), 2);
+}
+```
+- 直方图均衡化（增强对比）
+```
+// 必须8位单通道灰度图
+// 结果图像对比度增强，细节更清晰
+cv::equalizeHist(gray, equalized);
+```
