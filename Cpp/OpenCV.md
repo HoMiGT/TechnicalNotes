@@ -61,6 +61,9 @@
   - [5 阈值化与直方图处理](#5-阈值化与直方图处理)
     - [5.1 阈值化](#51-阈值化)
     - [5.2 直方图处理](#52-直方图处理)
+- [四、图像输入输出模块(imgcodecs)](#四图像输入输出模块imgcodecs)
+- [五、视频I/O模块(videoio)](#五视频I/O模块videoio)
+
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
   - 作用：OpenCV的核心模块，提供基本的数据结构(如Mat)、数据操作、绘图函数等。
@@ -78,12 +81,12 @@
     - 几何变换(resize、warpAffine、warpPerspective)
     - 形态学操作(膨胀、腐蚀等)
     - 阈值化、直方图处理
-- [ ] 图像输入输出模块(imgcodecs)
+- [x] 图像输入输出模块(imgcodecs)
   - 作用: 图像读写
   - 内容：
     - imread、imwrite、imdecode等
     - 支持JPEG、PNG、TIFF、BMP等  
-- [ ] 视频I/O模块(videoio)
+- [x] 视频I/O模块(videoio)
   - 作用: 视频读取、写入以及摄像头访问
   - 内容:
     - VideoCapture、VideoWriter
@@ -1271,4 +1274,84 @@ for (int i = 1; i < histSize; i++) {
 // 必须8位单通道灰度图
 // 结果图像对比度增强，细节更清晰
 cv::equalizeHist(gray, equalized);
+```
+# 四、图像输入输出模块(imgcodecs)
+1. cv::imread
+```
+// cv::IMREAD_COLOR 默认 加载彩色图
+// cv::IMREAD_GRAYSCALE 加载灰度图
+// cv::IMRead_UNCHANGED 保留alpha通道
+cv::Mat img = cv::imread("",cv::IMREAD_COLOR);
+```
+2. cv::imwrite
+```
+cv::imwrite("result.png",img);
+
+std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};
+cv::imwrite("result.jpg",img,params);
+```
+3. cv::imencode
+```
+// 将图像编码为内存缓存(std::vector<uchar>)
+// 用于网络传输或数据库存储
+std::vector<uchar> buf;
+cv::imencode(".png",img,buf);
+```
+4. cv::imdecode
+```
+// 从内存缓冲解码为cv::Mat
+// 用于网络接受到字节流还原图像
+cv::Mat img = cv::imdecode(buf,cv::IMREAD_COLOR);
+```
+# 五、视频I/O模块(videoio)
+videoio是OpenCV中用于视频流和相机IO的模块，作用：
+- 打开视频文件或相机(视频输入)
+- 从视频流中逐帧读取图像
+- 创建视频文件(视频输出)
+- 编码、解码视频帧
+- 支持多种后端(如FFmpeg,DirectShow,GStreamer,V4L,MSMF等)
+
+1. cv::VideoCapture
+```
+cv::VideoCapture cap(0);  // 打开默认相机
+
+cv::VideoCapture cap("video.mp4");  // 打开指定的视频
+```
+
+|方法|功能|
+|:--:|:--:|
+|read(Mat&)|读取一帧|
+|grab()|抓取下一帧(不解码)|
+|retrieve(Mat&)|获取抓取的帧|
+|get(propId)|获取视频属性(如宽高、帧率)|
+|set(propId,value)|设置属性|
+```
+常用属性(propId):
+- CAP_PROP_FRAME_WIDTH：帧宽
+- CAP_PROP_FRAME_HEIGHT：帧高
+- CAP_PROP_FPS：帧率
+- CAP_PROP_POS_FRAMES：当前帧编号
+- CAP_PROP_FRAME_COUNT：总帧数
+```
+
+2. cv::VideoWriter
+```
+cv::VideoCapture cap(0);
+if(!cap.isOpened()){
+  std::cerr << "无法打开相机" << std::endl;
+  return -1;
+}
+cv::VideoWriter writer("out.avi",cv::VideoWriter::fourcc('M','J','P','G'),30,cv::Size((int)cap.get(cv::CAP_PROP_FRAME_WIDTH),(int)cap.get(cv::CAP_PROP_FRAME_HEIGHT)));
+if (!writer.isOpened()){
+  std::cerr << "无法打开视频写入器" << std::endl;
+  return -1;
+}
+cv::Mat frame;
+while (true){
+  cap >> frame;  // 等价于cap.read(frame)
+  if (frame.empty()) break;
+  writer.write(frame);
+  cv::imshow("Camera",frame);
+  if (cv::waitKey(30)==27) break;
+}
 ```
