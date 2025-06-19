@@ -82,6 +82,14 @@
     - [3.2 FLANN匹配器(高纬数据大数据集快速匹配)](#32-FLANN匹配器高纬数据大数据集快速匹配)
     - [3.3 KNN匹配+比率筛选(Lowes Ratio Test)](#33-KNN匹配比率筛选Lowes-Ratio-Test)
   - [4 完整示例: ORB特征匹配](#4-完整示例-ORB特征匹配)
+- [十、结构光与3D重建模块(calib3d)](#十结构光与3D重建模块calib3d)
+  - [1 相机标定(calibrateCamera)](#1-相机标定calibrateCamera)
+  - [2 畸变矫正](#2-畸变矫正)
+  - [3 立体标定与校正](#3-立体标定与校正)
+  - [4 立体匹配(StereoBM/StereoSGBM)](#4-立体匹配StereoBMStereoSGBM)
+  - [5 三角化重建](#5-三角化重建)
+  - [6 几何矩阵求解](#6-几何矩阵求解)
+  - [7 姿态估计(PnP)](#7姿态估计PnP)
 
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
@@ -127,12 +135,12 @@
     - 支持ONNX/Caffe/TensorFlow等模型
     - 推理执行与blob数据封装
     - 常用于Yolo/ResNet/MobileNet等模型 
-- [ ] 特征提取与描述子模块(features2d)
+- [x] 特征提取与描述子模块(features2d)
   - 作用: 关键点检测与描述
   - 内容：
     - SIFT、SURF(非自由)、ORB、BRISK等
     - 特征匹配、绘图、FLANN匹配等 
-- [ ] 结构光与3D重建模块(calib3d)
+- [x] 结构光与3D重建模块(calib3d)
   - 作用：相机标定与三维重建
   - 内容：
     - 单目/双目相机标定
@@ -1652,7 +1660,107 @@ Mat H = findHomography(pts1,pts2,RANSAC);
 - SIFT: contrastThreshold(对比度阈值), edgeThreshold(边缘响应阈值)
 - BRISK/AKAZE: thresh(检测阈值)
 
+# 十、结构光与3D重建模块(calib3d)
+calib3d口诀
+- 标定 calibrateCamera
+- 双目 stereoCalibrate
+- 畸变 undistort
+- 矫正 stereoRectify
+- 匹配 StereoBM/SGBM
+- 重建 reprojectImageTo3D/triangulatePoints
+- 姿态 solvePnP
+
+常用调参表
+|参数|功能|建议范围|
+|:--:|:--:|:--:|
+|StereoBM::numDisparities|视差范围|图像宽度/8的整数倍|
+|StereoBM::blockSize|区块大小|5~21奇数|
+|StereoSGBM::P1,P2|光滑度调节||
+|solvePnP|算法类型|SOLVEPNP_ITERATIVE,P3P,EPNP|
+
+核心流程图
+1. 棋盘图采集
+2. 检测角点
+3. 相机标定
+4. 畸变矫正
+5. 双目标定 -> (立体匹配->视差图->3D重建)
+6. 立体矫正
 
 
+## 1 相机标定(calibrateCamera)
+用于求解相机内参矩阵、畸变系数。
+📌 输入：已知 3D 模型点（棋盘格角点坐标）、检测到的 2D 图像点
+📌 输出：相机矩阵、畸变系数、旋转向量、平移向量
+```
+// objectPoints: 每张图的棋盘格3D点集合
+// imagePoints: 每张图的检测到的角点2D坐标
+// cameraMatrix: 相机内参矩阵
+// distCoeffs: 畸变系数
+// rvecs, tvecs: 每张图对应的外参
+cv::calibrateCamera(objectPoints,imagePoints,imageSize,cameraMatrix,distCoeffs,rvecs,tvecs);
+```
+## 2 畸变矫正
+直接矫正图像
+```
+cv::undistort(src,dst,cameraMatrix,distCoeffs);
+```
+适合实时视频流
+```
+cv::initUndistortRectifyMap(cameraMatrix,distCoeffs,noArray(),newCameraMatrix,imageSize,CV_16SC2,map1,map2);
+cv::remap(src,dst,map1,map2,INTER_LINEAR);
+```
+## 3 立体标定与校正
+标定双目相机
+```
+// R: 左右相机旋转矩阵
+// T: 左右相机平移向量
+// E: 本质矩阵
+// F: 基础矩阵
+cv::stereoCalibrate(objectPoints,imgPts1,imgPts2,cameraMatrix1,distCoeffs1,cameraMatrix2,distCoeffs2,imageSize,R,T,E,F);
+```
+立体矫正
+```
+// Q: 重投影矩阵,用于深度图转点云
+cv::stereoRectify(cameraMatrix1,distCoeffs1,cameraMatrix2,distCoeffs2,imageSize,R,T,R1,R2,P1,P2,Q);
+```
 
+## 4 立体匹配(StereoBM/StereoSGBM)
+生成视差图
+```
+auto matcher = cv::StereoBM::create(numDisparities,blockSize);
+matcher->compute(leftImg,rightImg,disparity);
+或
+auto matcher = cv::StereoSGBM::create(numDisparities,blockSize);
+matcher->compute(leftImg,rightImg,disparity);
+```
 
+## 5 三角化重建
+已知投影矩阵和匹配点三角化
+```
+cv::triangulatePoints(P1,P2,pts1,pts2,points4D);
+```
+输出是齐次坐标，需要除以第四维
+视差图重建点云
+```
+cv::reprojectImageTo3D(disparity,points3D,Q);
+```
+
+## 6 几何矩阵求解
+👉单应矩阵(平面变换)
+```
+cv::findHomography(pts1,pts2,RANSAC);
+```
+👉 基础矩阵（用于非校正双目）
+```
+cv::findFundamentalMat(pts1,pts2,RANSAC);
+```
+👉 本质矩阵（已知内参）
+```
+cv::findEssentialMat(pts1,pts2,cameraMatrix);
+```
+## 7 姿态估计(PnP)
+👉 求解相机姿态
+```
+cv::solvePnP(objectPoints,imagePoints,cameraMatrix,distCoeffs,rvec,tvec);
+// 更稳健的方法 cv::solvePnPRansac;
+```
