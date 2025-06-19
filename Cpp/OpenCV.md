@@ -63,7 +63,7 @@
     - [5.2 直方图处理](#52-直方图处理)
 - [四、图像输入输出模块(imgcodecs)](#四图像输入输出模块imgcodecs)
 - [五、视频I/O模块(videoio)](#五视频IO模块videoio)
-- [六、机器学习模块(ml)](#六机器学习模块ml)
+- [七、机器学习模块(ml)](#七机器学习模块ml)
   - [1 支持向量机](#1-支持向量机)
   - [2 K最近邻](#2-K最近邻)
   - [3 决策树](#3-决策树)
@@ -73,6 +73,8 @@
   - [7 神经网络](#7-神经网络)
   - [8 KMeans](#8-KMeans)
   - [9 PCA/LDA](#9-PCALDA)
+- [八、深度学习模块(dnn)](#八深度学习模块dnn)
+- [九、特征提取与描述子模块(features2d)](#九特征提取与描述子模块features2d)
 
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
@@ -107,12 +109,12 @@
     - Haar特征分类器(人脸检测)
     - HOG(行人检测)
     - QR/条码检测    
-- [ ] 机器学习模块(ml)
+- [x] 机器学习模块(ml)
   - 作用：集成传统的ml算法
   - 内容：
     - SVM、KNN、决策树、随机森林等
     - 支持训练、预测和保存模型 
-- [ ] 深度学习模块(dnn)
+- [x] 深度学习模块(dnn)
   - 作用：加载并运行DNN模型
   - 内容：
     - 支持ONNX/Caffe/TensorFlow等模型
@@ -1365,7 +1367,7 @@ while (true){
   if (cv::waitKey(30)==27) break;
 }
 ```
-# 六、机器学习模块(ml)
+# 七、机器学习模块(ml)
 ml模块是OpenCV提供的传统机器学习库，主要用于:
 - 特征向量训练
 - 分类、回归、聚类任务
@@ -1452,3 +1454,67 @@ ann->predict(sample,output);
 ## 8 KMeans
 可用于图像分割、特征聚类
 ## 9 PCA/LDA
+# 八、深度学习模块(dnn)
+```
+// 加载网络
+cv::dnn::Net net = cv::dnn::readNet("model.onnx");
+
+cv::dnn::Net net = cv::dnn::readNetFromONNX("model.onnx");
+cv::dnn::Net net = cv::dnn::readNetFromTensorflow("model.pb");
+cv::dnn::Net net = cv::dnn::readNetFromCaffe("deploy.prototxt","model.caffemodel");
+
+// 设置后端和目标
+net.setPreferableBackend(cv::dnn::DNN_BACKEND_DEFAULT);
+net.setPreferableBackend(cv::dnn::DNN_TARGET_CPU);
+// 其他可选
+// net.setPreferableBackend(DNN_BACKEND_OPENCV);
+// net.setPreferableBackend(DNN_BACKEND_INFERENCE_ENGINE); // OpenVINO
+// net.setPreferableTarget(DNN_TARGET_OPENCL);             // GPU (OpenCL)
+// net.setPreferableTarget(DNN_TARGET_MYRIAD);             // Intel 神经棒
+
+// 数据预处理(blob转换)
+cv::Mat blob = cv::dnn::blobFromImage(img,1.0/255.0,cv::Size(224,224),cv::Scalar(0,0,0),true,false);
+
+// 前向推理
+net.setInput(blob);
+cv::Mat output = net.forward();
+// 如果有多个输出节点
+std::vector<cv::Mat> outputs;
+std::vector<std::string> outNames = net.getUnconnectedOutLayersNames();
+net.forward(outputs,outNames);
+```
+常用dnn模块应用:
+- 图像分类(ResNet,MobileNet,EfficientNet等)
+- 目标检测(Yolov5,Yolov8,SSD,FasterRCNN)
+- 图像分割(DeepLab,ENet)
+- 人脸关键点检测，姿态估计
+- OCR(如CRNN+CTC解码)
+
+|dnn模块优点|dnn模块缺点|
+|:--:|:--:|
+|纯OpenCV,简单好用|不支持训练,只支持推理|
+|支持多模型格式|部分新算子支持不完善|
+|可硬件加速(OpenCL,OpenVino)|性能不及专用框架(PyTorch,TensorRT)|
+|无需额外库，跨平台好|量化,剪枝等高级优化弱|
+
+dnn使用口诀
+```
+1. readNet 加载模型
+2. blobFromImage 数据预处理
+3. setInput 设置输入
+4. forward 前向推理
+5. 处理输出
+```
+# 九、特征提取与描述子模块(features2d)
+模块简介：
+- 在图像中找到关键点(特征点)
+- 用向量形式描述关键点(特征描述子)
+- 用于特征匹配、拼接、识别、跟踪等任务
+应用场景:
+- 物体识别
+- 视频跟踪初始化
+- SLAM/视觉定位
+- 3D重建关键点提取
+
+
+
