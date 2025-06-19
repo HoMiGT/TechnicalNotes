@@ -89,7 +89,7 @@
   - [4 立体匹配(StereoBM/StereoSGBM)](#4-立体匹配StereoBMStereoSGBM)
   - [5 三角化重建](#5-三角化重建)
   - [6 几何矩阵求解](#6-几何矩阵求解)
-  - [7 姿态估计(PnP)](#7姿态估计PnP)
+  - [7 姿态估计(PnP)](#7-姿态估计PnP)
 
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
