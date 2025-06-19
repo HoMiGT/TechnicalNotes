@@ -63,6 +63,16 @@
     - [5.2 直方图处理](#52-直方图处理)
 - [四、图像输入输出模块(imgcodecs)](#四图像输入输出模块imgcodecs)
 - [五、视频I/O模块(videoio)](#五视频IO模块videoio)
+- [六、机器学习模块(ml)](#六机器学习模块ml)
+  - [1 支持向量机](#1-支持向量机)
+  - [2 K最近邻](#2-K最近邻)
+  - [3 决策树](#3-决策树)
+  - [4 随机森林](#4-随机森林)
+  - [5 Boosting](#5-Boosting)
+  - [6 正态贝叶斯](#6-正态贝叶斯)
+  - [7 神经网络](#7-神经网络)
+  - [8 KMeans](#8-KMeans)
+  - [9 PCA/LDA](#9-PCALDA)
 
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
@@ -1355,3 +1365,90 @@ while (true){
   if (cv::waitKey(30)==27) break;
 }
 ```
+# 六、机器学习模块(ml)
+ml模块是OpenCV提供的传统机器学习库，主要用于:
+- 特征向量训练
+- 分类、回归、聚类任务
+- 模型保存、加载、预测
+- 与图像特征(如HOG、LBP、SIFT等)结合应用于视觉任务
+适合任务：
+- 简单目标分类(如SVM分人脸/非人脸)
+- 特征降维(PCA)
+- 聚类(如KMeans图像分割)
+- 回归(如预测数值标签)
+- 决策树、随机森林
+ml基本使用流程(核心思路)：
+1. 准备数据
+```
+特征矩阵Mat,类型是CV_32F或CV_64F,行是样本，列是特征
+标签向量Mat，一列
+```
+2. 创建模型
+```
+// 用工厂方法创建
+Ptr<ml::SVM> svm = ml::SVM::create();
+```
+3. 驯练模型
+```
+// trainData: 样本数据矩阵
+// ml::Row_SAMPLE：按行取样
+// labels: 标签向量
+svm->train(trainData,ml::ROW_SAMPLE,labels);
+```
+4. 预测
+```
+float result = svm->predict(sampleMat);
+```
+训练口诀
+```
+1. 数据: Mat 特征 float, Mat 标签 int
+2. 创建: Ptr<ml::模型>::create()
+3. 配置: setXxx()
+4. 训练: train(trainData, ROW_SAMPLE, labels)
+5. 预测: predict(sample)
+```
+## 1 支持向量机
+```
+auto svm = ml::SVM::create();
+svm->setType(ml::SVM::C_SVC);
+svm->setKernel(ml::SVM::RBF);  // LINEAR  POLY  RBF  SIGMOID
+svm->setC(1);
+svm->setGamma(0.5);
+svm->train(trainData,ml::ROW_SAMPLE,labels);
+float result = svm->predict(sample);
+```
+## 2 K最近邻
+适合小样本、低维数据
+```
+auto knn = ml::KNearest::create();
+knn->train(trainData,ml::ROW_SAMPLE,labels);
+float result = knn->findNearest(sample,3,noArray());
+```
+## 3 决策树
+```
+auto tree = ml::DTrees::create();
+tree->train(trainData,ml::ROW_SAMPLE,labels);
+float result = tree->predict(sample);
+```
+## 4 随机森林
+随机森林抗噪好，泛化能力强
+```
+auto rtrees = ml::RTrees::create();
+rtrees->train(trainData,ml::ROW_SAMPLE,labels);
+float result_rf = rtrees->predict(sample);
+```
+## 5 Boosting
+## 6 正态贝叶斯
+## 7 神经网络
+适合简单任务(现代任务更推荐深度学习框架)
+```
+auto ann = ml::ANN_MLP::create();
+ann->setLayerSizes(Mat_<int>(1,3)<<2,10,1);
+ann->setActivationFunction(ml::ANN_MLP::SIGMOID_SYM);
+ann->train(trainData,ml::ROW_SAMPLE,labels);
+Mat output;
+ann->predict(sample,output);
+```
+## 8 KMeans
+可用于图像分割、特征聚类
+## 9 PCA/LDA
