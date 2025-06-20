@@ -1898,3 +1898,69 @@ cv::waitKey(0);
 ```
 
 ## 3 多目标跟踪
+**方案1: 基于检测+多单目标跟踪器**
+OpenCV的MultiTracker工具可以创建多个单目标跟踪器      
+流程:
+1. 初始帧上检测所有目标(比如手工选框或用目标检测器生成候选框)
+2. 为每个目标创建一个单目标跟踪器
+3. 每帧更新跟踪器
+
+支持的单目标跟踪算法
+|跟踪器|特点|使用场景|
+|:--:|:--:|:--:|
+|KCF|快速,适合物体纹理丰富|一般运动物体|
+|CSRT|精度高,抗遮挡好，但慢|物体形状变化大|
+|MOSSE|极快，但精度低|实时性要求高，目标变化小|
+|MIL/BOOSTING|早期方法|学习用途|
+|TLD|能重新检测目标|简单场景|
+
+
+```
+#include <opencv2/opencv.hpp>
+#include <opencv2/tracking.hpp>
+
+int main(){
+  cv::VideoCapture cap("video.mp4");
+  if (!cap.isOpened()) return -1;
+
+  cv::Mat frame;
+  cap >> frame;
+
+  // 特点 简单易用，但ID可能因目标丢失而混乱
+  cv::Ptr<cv::MultiTracker> multiTracker = cv::MultiTracker::create();
+
+  std::vector<cv::Rect> bBoxes;
+  cv::selectROIs("Select Objects",frame,bBoxes);
+
+  for (const auto& box:bBoxes){
+    multiTracker->add(cv::TrackerCSRT::create(),frame,box);
+  }
+
+  while (cap.read(frame)){
+    multiTracker->update(frame);
+
+    for (const auto& obj: multiTracker->getObjects()){
+      cv::rectangle(frame,obj,cv::Scalar(0,255,0),2);
+    }
+    cv::imshow("MultiTracker",frame);
+    if (cv::waitKey(30) == 27) break;
+  }
+  return 0;
+}
+```
+
+**方案2: 检测+数据关联(经典MOT流程)**
+适合复杂多目标跟踪:
+- 每帧用目标检测(YOLO/SSD/HOG+SVM/背景建模等)检测目标
+- 用卡尔曼滤波、匈牙利算法或SORT/DeepSORT做数据关联和轨迹管理
+
+这种方法支持丢失重识别，支持ID分配，能处理遮挡、目标丢失等情况
+
+OpenCV+自己写MOT管理器(简化版思路)
+- 检测目标框
+- 
+
+
+
+
+
