@@ -90,7 +90,13 @@
   - [5 三角化重建](#5-三角化重建)
   - [6 几何矩阵求解](#6-几何矩阵求解)
   - [7 姿态估计(PnP)](#7-姿态估计PnP)
-
+- [十一、运动分析与光流(video)](#十一-运动分析与光流video)
+  - [1 背景建模(MOG2)](#1-背景建模MOG2)
+  - [2 光流估计](#2-光流估计)
+    - [2.1 Lucas-Kanade方法](#21-Lucas-Kanade方法)
+    - [2.2 Farneback方法](#22-Farneback方法)
+  - [3 多目标跟踪](#3-多目标跟踪)
+  
 # 一、OpenCV的主要模块及核心简介
 - [x] Core模块(Core)
   - 作用：OpenCV的核心模块，提供基本的数据结构(如Mat)、数据操作、绘图函数等。
@@ -146,7 +152,7 @@
     - 单目/双目相机标定
     - 三维坐标重建
     - 立体匹配、深度图、投影变换 
-- [ ] 运动分析与光流(video)
+- [x] 运动分析与光流(video)
   - 作用：视频帧间分析
   - 内容：
     - 背景建模(MOG2)等
@@ -1764,3 +1770,131 @@ cv::findEssentialMat(pts1,pts2,cameraMatrix);
 cv::solvePnP(objectPoints,imagePoints,cameraMatrix,distCoeffs,rvec,tvec);
 // 更稳健的方法 cv::solvePnPRansac;
 ```
+
+# 十一、运动分析与光流(video)
+能够帮助分析场景中的物体运动，通常应用于跟踪、动作分析、物体检测等任务。     
+光流的核心思想:
+- 假设场景中的物体像素的亮度不变，在连续的帧之间，物体的每个像素会根据它的运动产生位移。
+- 通过计算图像中每个像素的位移，得到场景的运动信息。
+
+光流的基本假设: I(x,y,t)=I(x+Δx,y+Δy,t+Δt)     
+即: 图像亮度I在时间t和空间位置(x,y)上是恒定的。
+
+光流方程
+通过泰勒展开和亮度一致性假设，得到经典的光流方程：  $$I_xU+I_yV+I_t=0$$     
+其中：     
+- $$I_x$$ 和 $$I_y$$ 是图像在x和y方向上的梯度
+- $$I_t$$ 是时间方向的梯度
+- U 和 V 是光流场中的水平和垂直分量(即物体的运动速度)
+
+## 1 背景建模(MOG2)
+背景建模用于视频运动检测,目的是:    
+👉 从视频中分离出运动前景（比如人、车），去掉静止背景。    
+MOG2的基本原理：
+- 将背景的每个像素建模成多个高斯分布(混合高斯模型)
+- 根据像素值的变化概率判断它是前景还是背景
+- 自适应学习: 背景会随时间更新, 例如灯光变化、风吹草动
+
+MOG2优点:
+- 能自适应动态背景
+- 自动调整高斯模型个数
+- 支持阴影检测
+
+MOG2缺点:
+- 对强光变化、摄像机抖动可能会误检
+- 需要参数调节以适配不同场景
+- 高分辨率视频计算量大(可裁剪ROI或用多线程优化)
+
+MOG2应用场景:
+- 视频监控前景检测
+- 交通监控车辆检测
+- 动作识别预处理
+
+完整示例
+```
+#include <opencv2/opencv.hpp>
+#include <opencv2/bgsegm.hpp>
+
+int main(){
+  cv::VideoCapture cap("video.mp4");
+  if (!cap.isOpened()) return -1;
+
+  cv::Ptr<cv::BackgroundSubtractorMOG2> pMOG2 = cv::createBackgroundSubtractorMOG2(500, 16, true);
+  cv::Mat frame, fgMask, bgImage;
+  while (true){
+    cap >> frame;
+    if (frame.empty()) break;
+    pMOG2->apply(frame, fgMask);
+    pMOG2->getBackgroudImage(bgImage);
+
+    cv::imshow("Frame", frame);
+    cv::imshow("FG Mask",fgMask);
+    if (!bgImage.empty()) cv::imshow("Backgroud",bgImage);
+    if (cv::waitKey(30)>=0) break;
+  }
+  return 0;
+}
+
+```
+
+## 2 光流估计
+### 2.1 Lucas-Kanade方法
+是光流计算中最经典的一种方法，基于局部窗口内的图像块假设其光流是常量的。该方法通过计算图像块内像素点的光流来估算整体的光流。
+```
+// 步骤：
+//     1. 计算图像梯度(水平 $$I_x$$ , 垂直 $$I_y$$ , 时间梯度 $$I_t$$ )
+//     2. 使用最小二乘法在局部窗口内解光流方法
+
+cv::Mat frame1, frame2, flow;
+cv::VideoCapture cap("video.mp4");
+
+cap >> frame1;
+cap >> frame2;
+
+cv::Mat gray1, gray2;
+cv::cvtColore(frame1, gray1, cv::COLOR_BGR2GRAY);
+cv::cvtColore(frame2, gray2, cv::COLOR_BGR2GRAY);
+
+cv::calcOpticalFlowPyrLK(gray1,gray2,points1,points2,status,err);
+
+for (size_t i=0; i<points2.size();++i){
+  if (status[i]){
+    cv::line(frame2,points1[i],points2[i],cv::Scalar(0,255,0),2);
+    cv::circle(frame2,points2[i],5,cv::Scalar(0,0,255),-1);
+  }
+}
+cv::imshow("Flow",frame2);
+cv::waitKey(0);
+```
+
+### 2.2 Farneback方法
+是另一种用于计算密集光流的算法。它不仅计算了每个像素点的光流，还能处理图像中的复杂运动。Farneback 方法使用多项式展开来估算图像之间的运动。
+```
+cv::Mat frame1, frame2, flow;
+cv::VideoCapture cap("video.mp4");
+
+// 读取视频的前两帧
+cap >> frame1;
+cap >> frame2;
+
+// 将帧转换为灰度图
+cv::Mat gray1, gray2;
+cv::cvtColor(frame1, gray1, cv::COLOR_BGR2GRAY);
+cv::cvtColor(frame2, gray2, cv::COLOR_BGR2GRAY);
+
+// 计算光流
+cv::calcOpticalFlowFarneback(gray1, gray2, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
+
+// 可视化光流
+for (int y = 0; y < frame1.rows; y += 10) {
+    for (int x = 0; x < frame1.cols; x += 10) {
+        const cv::Point2f flow_at_point = flow.at<cv::Point2f>(y, x);
+        cv::line(frame1, cv::Point(x, y), cv::Point(cvRound(x + flow_at_point.x), cvRound(y + flow_at_point.y)), cv::Scalar(0, 255, 0));
+        cv::circle(frame1, cv::Point(x, y), 2, cv::Scalar(0, 0, 255), -1);
+    }
+}
+cv::imshow("Dense Flow", frame1);
+cv::waitKey(0);
+```
+
+## 3 多目标跟踪
