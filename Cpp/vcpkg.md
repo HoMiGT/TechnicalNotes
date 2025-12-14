@@ -11,20 +11,19 @@ set(VCPKG_TARGET_ARCHITECTURE x64)
 set(VCPKG_CRT_LINKAGE dynamic)
 set(VCPKG_LIBRARY_LINKAGE dynamic)
 
-set(VCPKG_CMAKE_C_COMPILER "D:/Softwares/llvm/bin/clang.exe")
-set(VCPKG_CMAKE_CXX_COMPILER "D:/Softwares/llvm/bin/clang++.exe")
+set(VCPKG_CMAKE_C_COMPILER "E:/MSYS2/mingw64/bin/clang.exe")
+set(VCPKG_CMAKE_CXX_COMPILER "E:/MSYS2/mingw64/bin/clang++.exe")
+
+set(CMAKE_LINKER "E:/MSYS2/mingw64/bin/ld.exe")
 
 set(VCPKG_CMAKE_FIND_ROOT_PATH "E:/MSYS2/mingw64")
 set(VCPKG_CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(VCPKG_CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(VCPKG_CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-
-# 可选：使用 lld 或特定 link flags
-set(VCPKG_CMAKE_LINKER "D:/Softwares/llvm/bin/lld.exe")
-set(VCPKG_C_FLAGS "-fuse-ld=lld" CACHE STRING "" FORCE)
-set(VCPKG_CXX_FLAGS "-fuse-ld=lld" CACHE STRING "" FORCE)
-
+# 使用MinGW的标准库
+set(CMAKE_C_FLAGS "-fuse-ld=mingw -static-libgcc --static-libstdc++")
+set(CMAKE_CXX_FLAGS "-fuse-ld=mingw -static-libgcc -static-libstdc++")
 ```
 * 修改环境变量
 ```
