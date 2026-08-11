@@ -51,7 +51,7 @@ PYBIND11_MODULE(graph_color, m) {
 ```
 > 2. 下载python依赖库
 ```shell
-pip install setuptools pybind11
+pip install setuptools pybind11 pybind11-stubgen
 ```
 > 3. 构建自动化脚本
 ```python
@@ -76,6 +76,10 @@ setup(
 // build_ext: 告诉setuptools去编译c/c++扩展
 // --inplace: 原地编译，编译生成.pyd(动态库)
 python setup.py build_ext --inplace
+```
+> 5. 编译生成.pyi文件
+```shell
+python -m pybind11-stubgen graph_color
 ```
 
 ## 依赖第三方库
