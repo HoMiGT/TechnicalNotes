@@ -79,7 +79,7 @@ python setup.py build_ext --inplace
 ```
 > 5. 编译生成.pyi文件
 ```shell
-python -m pybind11-stubgen graph_color
+python -m pybind11_stubgen graph_color
 ```
 
 ## 依赖第三方库
