@@ -10,8 +10,158 @@ vundle的安装
 
 `$ git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim`
 
+下载代码补全插件
+
+`git clone --depth=1 --branch release https://gh-proxy.org/https://github.com/neoclide/coc.nvim.git ~/.vim/bundle/coc.nvim`
+
+coc插件需要nodejs 
+
+```
+sudo dnf install nodejs
+# 要升级node最新版本
+node --version
+sudo npm install -g n --registry=https://registry.npmmirror.com
+# 安装24 长期支持版本
+sudo /usr/local/bin/n 24
+```     
+
 ---
 `$ vim ~/.vimrc`
+```
+" vundle 环境配置
+set nocompatible
+filetype off
+set rtp+=~/.vim/bundle/Vundle.vim
+" vundle 插件
+call vundle#begin()
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'scrooloose/nerdtree'
+" Plugin 'prabirshrestha/vim-lsp'
+Plugin 'OmniSharp/omnisharp-vim'
+" Plugin 'Valloric/YouCompleteMe'
+Plugin 'neoclide/coc.nvim', {'branch': 'release'}
+Plugin 'rust-lang/rust.vim'
+Plugin 'vim-airline/vim-airline'
+call vundle#end()
+
+syntax enable
+
+filetype plugin indent on 
+set showmode
+set showcmd
+set encoding=utf-8
+set t_Co=256
+set shiftwidth=4
+set textwidth=120
+set history=2000
+set mouse=a
+set tabstop=4
+set softtabstop=4
+set clipboard+=unnamedplus
+set pastetoggle=<F2>
+
+
+let mapleader=","
+" rust.vim 配置
+let g:rustfmt_autosave=1
+let g:rustfmt_command="rustfmt"
+
+let g:ale_linters = {'rust': ['cargo', 'clippy']}
+let g:ale_fixers = {'rust': ['cargo','rustfmt']}
+
+let g:ale_rust_cargo_use_clippy=1
+let g:airline#extensions#ale#enabled=1
+let g:ycm_server_python_interpreter='/usr/bin/python3'
+
+vnoremap <leader>ft :RustFmtRange<CR>
+nnoremap <leader>ft :RustFmt<CR>
+nnoremap <M-r> :RustRun<CR>
+nnoremap <M-t> :RustTest<CR>
+
+" F5 save and run 
+map <F5> :call RunCode()<CR>
+imap <F5> <ESC> :call RunCode()<CR>
+
+func! RunCode()
+        exec "w"
+        if &filetype == 'python'
+                exec "!python3 %"
+        elseif &filetype =='sh'
+                exec "!bash %"
+        elseif &filetype =="cpp"
+                let compile_cmd = "g++ % -std=c++20 -Wall -o %<"
+                let run_cmd = "./%<"
+                exec "!" . compile_cmd . " && " .run_cmd 
+        endif 
+endfunc 
+
+" ============================================================
+" =================== 以下为新增的 coc.nvim 配置 ===============
+" ============================================================
+
+" 基础系统设置：降低延迟、提升响应速度、不生成备份冲突文件
+set nobackup
+set nowritebackup
+set updatetime=300
+set signcolumn=yes
+
+" 1. Tab / Shift-Tab 选择补全候选词
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" 2. 回车键 (<CR>) 确认补全（并自动选中第一项）
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
+                              \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+" 3. 跳转导航快捷键
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" 4. 诊断信息导航（[g 上一个错误，]g 下一个错误）
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" 5. 按大写 K 悬停查看函数文档与类型签名
+nnoremap <silent> K :call ShowDocumentation()<CR>
+
+function! ShowDocumentation()
+  if CocAction('hasProvider', 'hover')
+    call CocActionAsync('doHover')
+  else
+    call feedkeys('K', 'in')
+  endif
+endfunction
+
+" 6. 代码重命名 (，rn) 与代码快速修复 (，ac)
+nmap <leader>rn <Plug>(coc-rename)
+nmap <leader>ac <Plug>(coc-codeaction)
+```
+
+
+打开vim配置安装插件
+
+`:PluginInstall`
+
+重新打开vim
+
+`:CocInstall coc-rust-analyzer coc-clangd coc-pyright`
+
+
+
+----
+以下是旧版本配置
+
 ```
 " vundle 环境配置
 set nocompatible
